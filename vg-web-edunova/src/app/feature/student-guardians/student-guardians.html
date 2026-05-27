@@ -1,0 +1,358 @@
+<div class="student-guardians">
+  <header class="student-guardians__header">
+    <div class="student-guardians__titulo">
+      <div class="student-guardians__titulo-icono-bg"><lucide-icon name="users" [size]="20"></lucide-icon></div>
+      <div>
+        <h1>Asignacion de Apoderados</h1>
+        <span class="student-guardians__subtitulo">Vinculos entre estudiantes y tutores</span>
+      </div>
+    </div>
+    <button class="btn btn--primario" (click)="abrirModal()" [disabled]="cargandoSelects()">+ NUEVA ASIGNACION</button>
+  </header>
+
+  <div class="student-guardians__body">
+    <div class="student-guardians__stats">
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Total Asignaciones</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ relations().length }}</span>
+            <span class="stat-card__pill stat-card__pill--blue">Vinculos</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--blue">
+          <lucide-icon name="users" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Principales</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalPrincipales() }}</span>
+            <span class="stat-card__pill stat-card__pill--green">Contacto</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--green">
+          <lucide-icon name="check-circle" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Autorizan Retiro</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalRetiro() }}</span>
+            <span class="stat-card__pill stat-card__pill--orange">Permiso</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--orange">
+          <lucide-icon name="check-circle" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Conviven</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalConviven() }}</span>
+            <span class="stat-card__pill stat-card__pill--purple">Hogar</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--purple">
+          <lucide-icon name="building" [size]="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="student-guardians__controles">
+      <div style="display:flex; gap:12px; align-items:center; flex:1;">
+        <div class="buscador">
+          <lucide-icon name="search" class="buscador__icono" [size]="16"></lucide-icon>
+          <input type="text" placeholder="BUSCAR POR ESTUDIANTE, APODERADO, DNI O MATRICULA..." class="buscador__input" (input)="setBusqueda($event)" />
+        </div>
+        <div class="vista-toggle">
+          <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'lista'" (click)="setVista('lista')" title="Vista lista">
+            <lucide-icon name="list" [size]="16"></lucide-icon>
+          </button>
+          <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'grilla'" (click)="setVista('grilla')" title="Vista grilla">
+            <lucide-icon name="layout-grid" [size]="16"></lucide-icon>
+          </button>
+        </div>
+      </div>
+      <div class="dropdown-container">
+        <button class="btn btn--outline" (click)="toggleDropdown()">
+          <div class="btn-content">
+            <lucide-icon name="filter" [size]="16"></lucide-icon>
+            <span>{{ textoFiltro() }}</span>
+            <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+          </div>
+        </button>
+        @if (dropdownAbierto()) {
+        <div class="dropdown-overlay" (click)="dropdownAbierto.set(false)"></div>
+        <div class="dropdown-menu">
+          <button class="dropdown-item" [class.dropdown-item--activo]="filtro() === 'todas'" (click)="seleccionarFiltro('todas')">Todas</button>
+          <button class="dropdown-item" [class.dropdown-item--activo]="filtro() === 'primary'" (click)="seleccionarFiltro('primary')">Principal</button>
+          <button class="dropdown-item" [class.dropdown-item--activo]="filtro() === 'pickup'" (click)="seleccionarFiltro('pickup')">Autorizados retiro</button>
+          <button class="dropdown-item" [class.dropdown-item--activo]="filtro() === 'lives'" (click)="seleccionarFiltro('lives')">Vive con estudiante</button>
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="contenido-wrapper">
+      @if (cargando()) {
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead><tr><th>Estudiante</th><th>Apoderado</th><th>Parentesco</th><th>Permisos</th><th></th></tr></thead>
+          <tbody>
+            @for (i of [1,2,3,4,5]; track i) {
+            <tr>
+              <td><div class="skeleton skeleton-text" style="width:150px"></div></td>
+              <td><div class="skeleton skeleton-text" style="width:150px"></div></td>
+              <td><div class="skeleton skeleton-text" style="width:80px"></div></td>
+              <td><div class="skeleton skeleton-text" style="width:120px"></div></td>
+              <td><div class="skeleton skeleton-circle" style="width:32px"></div></td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+
+      @if (!cargando() && vistaMode() === 'lista') {
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead><tr><th>Estudiante</th><th>Apoderado</th><th>Parentesco</th><th>Permisos</th><th></th></tr></thead>
+          <tbody>
+            @for (relation of filtradasPaginadas(); track relation.studentId + '-' + relation.guardianId) {
+            <tr class="tabla__fila">
+              <td>
+                <div class="relation-info">
+                  <div class="relation-info__icono-bg"><lucide-icon name="graduation-cap" [size]="20"></lucide-icon></div>
+                  <div><div class="relation-info__nombre">{{ relation.studentName || ('Estudiante ' + relation.studentId) }}</div><div class="relation-info__id">Matricula: {{ relation.studentEnrollment || '-' }}</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="relation-info">
+                  <div class="relation-info__icono-bg relation-info__icono-bg--guardian"><lucide-icon name="shield" [size]="20"></lucide-icon></div>
+                  <div><div class="relation-info__nombre">{{ relation.guardianName || ('Apoderado ' + relation.guardianId) }}</div><div class="relation-info__id">DNI: {{ relation.guardianDocument || '-' }}</div></div>
+                </div>
+              </td>
+              <td><span class="etiqueta-status">{{ getRelationshipLabel(relation.relationship) }}</span></td>
+              <td>
+                <div class="chips">
+                  <span class="chip" [class.chip--on]="relation.isPrimaryGuardian">Principal</span>
+                  <span class="chip" [class.chip--on]="relation.livesWithStudent">Convive</span>
+                  <span class="chip" [class.chip--on]="relation.authorizedPickup">Retiro</span>
+                </div>
+              </td>
+              <td>
+                <div class="acciones">
+                  <button class="btn-icono" (click)="verDetalle(relation)" title="Ver"><lucide-icon name="eye" [size]="16"></lucide-icon></button>
+                  <button class="btn-icono" (click)="abrirModal(relation)" title="Editar"><lucide-icon name="edit" [size]="16"></lucide-icon></button>
+                  <button class="btn-icono btn-icono--peligro" (click)="eliminar(relation)" title="Eliminar"><lucide-icon name="trash" [size]="16"></lucide-icon></button>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr><td colspan="5" class="tabla__vacio">Sin resultados</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+
+      @if (!cargando() && vistaMode() === 'grilla') {
+      <div class="relation-grid">
+        @for (relation of filtradasPaginadas(); track relation.studentId + '-' + relation.guardianId) {
+        <article class="relation-card">
+          <div class="relation-card__actions">
+            <button class="btn-icono" (click)="verDetalle(relation)" title="Ver"><lucide-icon name="eye" [size]="16"></lucide-icon></button>
+            <button class="btn-icono" (click)="abrirModal(relation)" title="Editar"><lucide-icon name="edit" [size]="16"></lucide-icon></button>
+            <button class="btn-icono btn-icono--peligro" (click)="eliminar(relation)" title="Eliminar"><lucide-icon name="trash" [size]="16"></lucide-icon></button>
+          </div>
+
+          <div class="relation-card__pair">
+            <div class="relation-card__person">
+              <div class="relation-card__avatar relation-card__avatar--student">
+                <lucide-icon name="graduation-cap" [size]="18"></lucide-icon>
+              </div>
+              <div class="relation-card__text">
+                <span class="relation-card__label">Estudiante</span>
+                <strong>{{ relation.studentName || ('Estudiante ' + relation.studentId) }}</strong>
+                <small>{{ relation.studentEnrollment || 'Sin matricula' }}</small>
+              </div>
+            </div>
+
+            <div class="relation-card__connector">
+              <span></span>
+              <lucide-icon name="users" [size]="16"></lucide-icon>
+              <span></span>
+            </div>
+
+            <div class="relation-card__person">
+              <div class="relation-card__avatar relation-card__avatar--guardian">
+                <lucide-icon name="shield" [size]="18"></lucide-icon>
+              </div>
+              <div class="relation-card__text">
+                <span class="relation-card__label">Apoderado</span>
+                <strong>{{ relation.guardianName || ('Apoderado ' + relation.guardianId) }}</strong>
+                <small>DNI: {{ relation.guardianDocument || '-' }}</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="relation-card__footer">
+            <span class="etiqueta-status">{{ getRelationshipLabel(relation.relationship) }}</span>
+            <div class="chips">
+              <span class="chip" [class.chip--on]="relation.isPrimaryGuardian">Principal</span>
+              <span class="chip" [class.chip--on]="relation.livesWithStudent">Convive</span>
+              <span class="chip" [class.chip--on]="relation.authorizedPickup">Retiro</span>
+            </div>
+          </div>
+        </article>
+        } @empty {
+        <p class="student-guardians__cargando">Sin resultados</p>
+        }
+      </div>
+      }
+
+      @if (!cargando()) {
+      <div class="paginacion">
+        <div class="paginacion__info">
+          <span>PAGINA: {{ paginaActual() }} DE {{ totalPaginas() }}</span>
+          <div class="paginacion__barra"><div class="paginacion__progreso" [style.width.%]="(paginaActual() / totalPaginas()) * 100"></div></div>
+        </div>
+        <div class="paginacion__controles">
+          <button class="btn-icono" (click)="cambiarPagina(-1)" [disabled]="paginaActual() === 1"><lucide-icon name="chevron-left" [size]="16"></lucide-icon></button>
+          <button class="btn-paginacion btn-paginacion--activo">{{ paginaActual() }}</button>
+          <button class="btn-icono" (click)="cambiarPagina(1)" [disabled]="paginaActual() === totalPaginas()"><lucide-icon name="chevron-right" [size]="16"></lucide-icon></button>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  @if (mostrarModal()) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__titulo">
+          <div class="modal__icono-bg"><lucide-icon name="users" [size]="18"></lucide-icon></div>
+          <div><strong>{{ editando() ? 'Editar Asignacion' : 'Nueva Asignacion' }}</strong><span class="modal__subtitulo">ESTUDIANTE Y APODERADO</span></div>
+        </div>
+        <button class="modal__cerrar" (click)="cerrarModal()"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="modal__body">
+        <div class="campo-fila">
+          <div class="campo">
+            <label>Estudiante *</label>
+            <select formControlName="studentId" class="custom-select">
+              <option [ngValue]="null" disabled>Seleccionar estudiante</option>
+              @for (student of students(); track student.id) {
+              <option [ngValue]="student.id">{{ getStudentDisplay(student) }}</option>
+              }
+            </select>
+          </div>
+          <div class="campo">
+            <label>Apoderado *</label>
+            <select formControlName="guardianId" class="custom-select">
+              <option [ngValue]="null" disabled>Seleccionar apoderado</option>
+              @for (guardian of guardians(); track guardian.id) {
+              <option [ngValue]="guardian.id">{{ getGuardianDisplay(guardian) }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="campo-fila">
+          <div class="campo">
+            <label>Parentesco *</label>
+            <select formControlName="relationship" class="custom-select">
+              <option value="father">Padre</option>
+              <option value="mother">Madre</option>
+              <option value="guardian">Tutor</option>
+              <option value="uncle">Tio/Tia</option>
+              <option value="grandparent">Abuelo/a</option>
+              <option value="sibling">Hermano/a</option>
+              <option value="other">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="checks">
+          <label><input type="checkbox" formControlName="isPrimaryGuardian" /> Apoderado principal</label>
+          <label><input type="checkbox" formControlName="livesWithStudent" /> Vive con el estudiante</label>
+          <label><input type="checkbox" formControlName="authorizedPickup" /> Autorizado para retiro</label>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="btn btn--secundario" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primario" [disabled]="form.invalid || cargandoSelects()">{{ editando() ? 'Guardar Cambios' : 'Registrar Asignacion' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  <div class="rightbar-overlay" [class.rightbar-overlay--visible]="mostrarDetalle()" (click)="cerrarDetalle()"></div>
+  <aside class="rightbar" [class.rightbar--open]="mostrarDetalle()">
+    @if (detalle(); as d) {
+    <div class="rightbar__header">
+      <div class="rightbar__header-info">
+        <div class="rightbar__icono-bg"><lucide-icon name="users" [size]="18"></lucide-icon></div>
+        <div><strong>{{ d.studentName || ('Estudiante ' + d.studentId) }}</strong><span class="rightbar__subtitulo">{{ d.guardianName || ('Apoderado ' + d.guardianId) }}</span></div>
+      </div>
+      <button class="modal__cerrar" (click)="cerrarDetalle()"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+    </div>
+    <div class="rightbar__body">
+      <div class="relation-detail">
+        <div class="relation-detail__node">
+          <div class="relation-detail__avatar relation-detail__avatar--student"><lucide-icon name="graduation-cap" [size]="20"></lucide-icon></div>
+          <span>Estudiante</span>
+          <strong>{{ d.studentName || ('Estudiante ' + d.studentId) }}</strong>
+          <small>{{ d.studentEnrollment || '-' }}</small>
+        </div>
+        <div class="relation-detail__link">
+          <span></span>
+          <lucide-icon name="users" [size]="18"></lucide-icon>
+          <span></span>
+        </div>
+        <div class="relation-detail__node">
+          <div class="relation-detail__avatar relation-detail__avatar--guardian"><lucide-icon name="shield" [size]="20"></lucide-icon></div>
+          <span>Apoderado</span>
+          <strong>{{ d.guardianName || ('Apoderado ' + d.guardianId) }}</strong>
+          <small>DNI: {{ d.guardianDocument || '-' }}</small>
+        </div>
+      </div>
+
+      <div class="rightbar__seccion">
+        <h3 class="rightbar__seccion-titulo">Relacion Familiar</h3>
+        <div class="detalle-grid">
+          <div class="detalle-campo"><span class="detalle-campo__label">Parentesco</span><span class="detalle-campo__valor">{{ getRelationshipLabel(d.relationship) || '-' }}</span></div>
+          <div class="detalle-campo"><span class="detalle-campo__label">Registrado</span><span class="detalle-campo__valor">{{ formatearFecha(d.createdAt) }}</span></div>
+        </div>
+      </div>
+      <div class="rightbar__seccion">
+        <h3 class="rightbar__seccion-titulo">Permisos</h3>
+        <div class="permission-list">
+          <div class="permission-list__item" [class.permission-list__item--on]="d.isPrimaryGuardian">
+            <lucide-icon name="check-circle" [size]="16"></lucide-icon>
+            <span>Apoderado principal</span>
+            <strong>{{ d.isPrimaryGuardian ? 'Si' : 'No' }}</strong>
+          </div>
+          <div class="permission-list__item" [class.permission-list__item--on]="d.livesWithStudent">
+            <lucide-icon name="building" [size]="16"></lucide-icon>
+            <span>Vive con el estudiante</span>
+            <strong>{{ d.livesWithStudent ? 'Si' : 'No' }}</strong>
+          </div>
+          <div class="permission-list__item" [class.permission-list__item--on]="d.authorizedPickup">
+            <lucide-icon name="check-circle" [size]="16"></lucide-icon>
+            <span>Autorizado para retiro</span>
+            <strong>{{ d.authorizedPickup ? 'Si' : 'No' }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="rightbar__footer">
+      <button class="btn btn--secundario" (click)="cerrarDetalle()">Cerrar</button>
+      <button class="btn btn--primario" (click)="cerrarDetalle(); abrirModal(d)">Editar</button>
+    </div>
+    }
+  </aside>
+</div>

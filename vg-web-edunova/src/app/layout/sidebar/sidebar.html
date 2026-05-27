@@ -1,0 +1,90 @@
+<aside class="sidebar" [class.collapsed]="isCollapsed()">
+  <div class="sidebar-header" [class.collapsed]="isCollapsed()">
+    @if (!isCollapsed()) {
+    <div class="logo-section">
+      <div class="logo-icon-wrapper">
+        <img src="logo.png" alt="Logo" class="sidebar-logo" />
+      </div>
+      <span class="logo-title">EDUNOVA</span>
+    </div>
+    }
+
+    <button class="collapse-btn" (click)="toggleCollapse()" [title]="isCollapsed() ? 'Expandir menú' : 'Colapsar menú'"
+      aria-label="Toggle sidebar">
+      <lucide-icon [img]="isCollapsed() ? Menu : X" [size]="18" />
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    @for (group of menuGroups(); track group.title; let i = $index) {
+    <div class="menu-group">
+      @if (!isCollapsed()) {
+      <button class="group-header" (click)="toggleGroup(i)">
+        <span class="group-title">{{ group.title }}</span>
+        <lucide-icon [img]="group.open ? ChevronDown : ChevronRight" [size]="16" class="group-chevron" />
+      </button>
+      }
+      @if (group.open) {
+      <div class="group-items" [@slideDown]>
+        @for (item of group.items; track item.label) {
+        <a [routerLink]="item.route" class="menu-item" routerLinkActive="active" #rla="routerLinkActive"
+          [class.active]="rla.isActive">
+          <lucide-icon [img]="getIcon(item.icon)" [size]="20" class="item-icon" />
+          @if (!isCollapsed()) {
+          <span class="item-label">{{ item.label }}</span>
+          }
+        </a>
+        }
+      </div>
+      } @else if (isCollapsed()) {
+      <div class="group-items">
+        @for (item of group.items; track item.label) {
+        <a [routerLink]="item.route" class="menu-item" routerLinkActive="active" #rla="routerLinkActive"
+          [class.active]="rla.isActive">
+          <lucide-icon [img]="getIcon(item.icon)" [size]="20" class="item-icon" />
+        </a>
+        }
+      </div>
+      }
+    </div>
+    }
+  </nav>
+
+  <div class="sidebar-user" [class.collapsed]="isCollapsed()">
+    <button class="user-btn" [class.menu-open]="userMenuOpen()" (click)="toggleUserMenu()" (blur)="closeUserMenu()"
+      aria-label="Menú de usuario">
+      <div class="user-avatar">
+        @if (fotoBlobUrl(); as url) {
+        <img [src]="url" class="user-avatar__img" alt="" />
+        } @else {
+        {{ userInitials() }}
+        }
+      </div>
+      @if (!isCollapsed()) {
+      <div class="user-info">
+        <span class="user-name">{{ user()?.nombre }}</span>
+        <span class="user-role">{{ user()?.rol }}</span>
+      </div>
+      <lucide-icon [img]="getIcon('ChevronUp')" [size]="16" class="user-chevron" [class.rotated]="userMenuOpen()" />
+      }
+    </button>
+
+    @if (userMenuOpen() && !isCollapsed()) {
+    <div class="user-dropdown" (mousedown)="$event.preventDefault()">
+      <button class="dropdown-item" (click)="onProfileClick()">
+        <lucide-icon [img]="UserIcon" [size]="16" />
+        <span>Ver Perfil</span>
+      </button>
+      <button class="dropdown-item" (click)="onSettingsClick()">
+        <lucide-icon [img]="Settings" [size]="16" />
+        <span>Configuración</span>
+      </button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item danger" (click)="onLogout()">
+        <lucide-icon [img]="LogOut" [size]="16" />
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+    }
+  </div>
+</aside>

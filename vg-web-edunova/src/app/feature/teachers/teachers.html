@@ -1,0 +1,521 @@
+<div class="teachers">
+
+  <header class="teachers__header">
+    <div class="teachers__titulo">
+      <div class="teachers__titulo-icono-bg"><lucide-icon name="graduation-cap" [size]="20"></lucide-icon></div>
+      <div>
+        <h1>Gestión de Profesores</h1>
+        <span class="teachers__subtitulo">Registro de docentes y personal académico</span>
+      </div>
+    </div>
+    <button class="btn btn--primario" (click)="abrirModal()">
+      + NUEVO PROFESOR
+    </button>
+  </header>
+
+  <div class="teachers__body">
+    <!-- Stats Cards -->
+    <div class="teachers__stats">
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Total Profesores</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ teachers().length }}</span>
+            <span class="stat-card__pill stat-card__pill--blue">Registrados</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--blue">
+          <lucide-icon name="users" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Profesores Activos</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalActivos() }}</span>
+            <span class="stat-card__pill stat-card__pill--green">Activos</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--green">
+          <lucide-icon name="check-circle" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Profesores Inactivos</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalInactivos() }}</span>
+            <span class="stat-card__pill stat-card__pill--orange">Inactivos</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--orange">
+          <lucide-icon name="x-circle" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Contrato Permanente</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalPermanentes() }}</span>
+            <span class="stat-card__pill stat-card__pill--purple">Planta</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--purple">
+          <lucide-icon name="award" [size]="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <div class="teachers__controles">
+      <div style="display:flex; gap:12px; align-items:center; flex:1;">
+        <div class="buscador">
+          <lucide-icon name="search" class="buscador__icono" [size]="16"></lucide-icon>
+          <input type="text" placeholder="BUSCAR POR NOMBRE, CÓDIGO O ESPECIALIDAD..." class="buscador__input"
+            (input)="setBusqueda($event)" />
+        </div>
+        <div class="vista-toggle">
+          <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'lista'"
+            (click)="setVista('lista')" title="Vista lista">
+            <lucide-icon name="list" [size]="16"></lucide-icon>
+          </button>
+          <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'grilla'"
+            (click)="setVista('grilla')" title="Vista grilla">
+            <lucide-icon name="layout-grid" [size]="16"></lucide-icon>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <!-- Filtro por tipo de contrato -->
+        <div class="dropdown-container">
+          <button class="btn btn--outline" (click)="toggleContratoDropdown()">
+            <div class="btn-content">
+              <lucide-icon name="briefcase" [size]="16"></lucide-icon>
+              <span>Contrato: {{ textoContratoFiltro() }}</span>
+              <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+            </div>
+          </button>
+          @if (contratoDropdownAbierto()) {
+          <div class="dropdown-overlay" (click)="contratoDropdownAbierto.set(false)"></div>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" [class.dropdown-item--activo]="tipoContratoFiltro() === 'todos'"
+              (click)="seleccionarContratoFiltro('todos')">
+              <lucide-icon name="briefcase" [size]="16"></lucide-icon> Todos
+            </button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="tipoContratoFiltro() === 'PERMANENTE'"
+              (click)="seleccionarContratoFiltro('PERMANENTE')">
+              <lucide-icon name="check-circle" [size]="16"></lucide-icon> Permanente
+            </button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="tipoContratoFiltro() === 'TEMPORAL'"
+              (click)="seleccionarContratoFiltro('TEMPORAL')">
+              <lucide-icon name="clock" [size]="16"></lucide-icon> Temporal
+            </button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="tipoContratoFiltro() === 'POR_HORAS'"
+              (click)="seleccionarContratoFiltro('POR_HORAS')">
+              <lucide-icon name="clock" [size]="16"></lucide-icon> Por horas
+            </button>
+          </div>
+          }
+        </div>
+
+        <!-- Filtro por estado activo/inactivo -->
+        <div class="dropdown-container">
+          <button class="btn btn--outline" (click)="toggleDropdown()">
+            <div class="btn-content">
+              <lucide-icon name="filter" [size]="16"></lucide-icon>
+              <span>{{ textoFiltro() }}</span>
+              <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+            </div>
+          </button>
+          @if (dropdownAbierto()) {
+          <div class="dropdown-overlay" (click)="dropdownAbierto.set(false)"></div>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'todas'"
+              (click)="seleccionarFiltro('todas')">
+              <lucide-icon name="users" [size]="16"></lucide-icon> Todos los profesores
+            </button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'activas'"
+              (click)="seleccionarFiltro('activas')">
+              <lucide-icon name="check-circle" [size]="16"></lucide-icon> Solo activos
+            </button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'inactivas'"
+              (click)="seleccionarFiltro('inactivas')">
+              <lucide-icon name="x-circle" [size]="16"></lucide-icon> Solo inactivos
+            </button>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Skeleton Loading -->
+    @if (cargando()) {
+    <div class="contenido-wrapper">
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Profesor</th>
+              <th>Código</th>
+              <th>Especialidad</th>
+              <th>Contrato</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of [1,2,3,4,5]; track i) {
+            <tr class="tabla__fila">
+              <td>
+                <div class="skeleton skeleton-text" style="width:150px"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width:100px"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width:120px"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width:80px"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width:60px"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-circle" style="width:32px"></div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+    <!-- Vista Lista -->
+    <div class="contenido-wrapper">
+      @if (!cargando() && vistaMode() === 'lista') {
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Profesor</th>
+              <th>Código</th>
+              <th>Especialidad / Título</th>
+              <th>Contrato</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (teacher of filtradasPaginadas(); track teacher.id) {
+            <tr class="tabla__fila">
+              <td>
+                <div class="teacher-info">
+                  <div class="teacher-info__icono-bg"><lucide-icon name="user" [size]="20"></lucide-icon></div>
+                  <div>
+                    <div class="teacher-info__nombre">{{ teacher.personName }}</div>
+                    <div class="teacher-info__id">DNI: {{ teacher.personDocument || '—' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="tabla__codigo">{{ teacher.teacherCode }}</div>
+              </td>
+              <td>
+                <div class="tabla__especialidad">{{ teacher.specialty || '—' }}</div>
+                <div class="tabla__sub">{{ teacher.professionalTitle || '—' }}</div>
+              </td>
+              <td>
+                <span class="etiqueta-contrato" [style.backgroundColor]="getContractTypeColor(teacher.contractType)"
+                  [style.color]="'white'">
+                  {{ getContractTypeLabel(teacher.contractType) }}
+                </span>
+              </td>
+              <td>
+                <span class="etiqueta-estado" [class.etiqueta-estado--activo]="teacher.isActive"
+                  [class.etiqueta-estado--inactivo]="!teacher.isActive">
+                  {{ teacher.isActive ? 'ACTIVO' : 'INACTIVO' }}
+                </span>
+              </td>
+              <td>
+                <div class="acciones">
+                  <button class="btn-icono" (click)="verDetalle(teacher)" title="Ver"><lucide-icon name="eye"
+                      [size]="16"></lucide-icon></button>
+                  <button class="btn-icono" (click)="abrirModal(teacher)" title="Editar"><lucide-icon name="edit"
+                      [size]="16"></lucide-icon></button>
+                  <button class="btn-icono" (click)="toggleEstado(teacher)"
+                    [title]="teacher.isActive ? 'Desactivar' : 'Activar'">
+                    <lucide-icon name="power" [size]="16"
+                      [style.color]="teacher.isActive ? '#ef4444' : '#10b981'"></lucide-icon>
+                  </button>
+                  <button class="btn-icono btn-icono--peligro" (click)="eliminar(teacher.id!)" title="Eliminar">
+                    <lucide-icon name="trash" [size]="16"></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            } @empty { <tr>
+              <td colspan="6" class="tabla__vacio">Sin resultados</td>
+            </tr> }
+          </tbody>
+        </table>
+      </div>
+      }
+
+      <!-- Vista Grilla -->
+      @if (!cargando() && vistaMode() === 'grilla') {
+      <div class="grilla">
+        @for (teacher of filtradasPaginadas(); track teacher.id) {
+        <div class="grilla__card">
+          <div class="grilla__card-icono-bg"><lucide-icon name="graduation-cap" [size]="24"></lucide-icon></div>
+          <div class="grilla__card-nombre">{{ teacher.personName }}</div>
+          <div class="grilla__card-codigo">Código: {{ teacher.teacherCode }}</div>
+          <div class="grilla__separator"></div>
+          <div class="grilla__card-contacto"><lucide-icon name="briefcase" [size]="14"></lucide-icon> {{
+            teacher.specialty || 'Sin especialidad' }}</div>
+          <div class="grilla__card-contacto"><lucide-icon name="award" [size]="14"></lucide-icon> {{
+            getContractTypeLabel(teacher.contractType) }}</div>
+          <span class="etiqueta-contrato" [style.backgroundColor]="getContractTypeColor(teacher.contractType)"
+            [style.color]="'white'" style="margin-top: 4px;">
+            {{ getContractTypeLabel(teacher.contractType) }}
+          </span>
+          <span class="etiqueta-estado" [class.etiqueta-estado--activo]="teacher.isActive"
+            [class.etiqueta-estado--inactivo]="!teacher.isActive">
+            {{ teacher.isActive ? 'ACTIVO' : 'INACTIVO' }}
+          </span>
+          <div class="grilla__card-acciones">
+            <button class="btn-icono" (click)="verDetalle(teacher)" title="Ver"><lucide-icon name="eye"
+                [size]="16"></lucide-icon></button>
+            <button class="btn-icono" (click)="abrirModal(teacher)" title="Editar"><lucide-icon name="edit"
+                [size]="16"></lucide-icon></button>
+            <button class="btn-icono" (click)="toggleEstado(teacher)"
+              [title]="teacher.isActive ? 'Desactivar' : 'Activar'">
+              <lucide-icon name="power" [size]="16"
+                [style.color]="teacher.isActive ? '#ef4444' : '#10b981'"></lucide-icon>
+            </button>
+            <button class="btn-icono btn-icono--peligro" (click)="eliminar(teacher.id!)" title="Eliminar"><lucide-icon
+                name="trash" [size]="16"></lucide-icon></button>
+          </div>
+        </div>
+        } @empty { <p class="teachers__cargando">Sin resultados</p> }
+      </div>
+      }
+
+      <!-- Paginación -->
+      @if (!cargando()) {
+      <div class="paginacion">
+        <div class="paginacion__info">
+          <span>PÁGINA: {{ paginaActual() }} DE {{ totalPaginas() }}</span>
+          <div class="paginacion__barra">
+            <div class="paginacion__progreso" [style.width.%]="(paginaActual() / totalPaginas()) * 100"></div>
+          </div>
+        </div>
+        <div class="paginacion__controles">
+          <button class="btn-icono" (click)="cambiarPagina(-1)" [disabled]="paginaActual() === 1"><lucide-icon
+              name="chevron-left" [size]="16"></lucide-icon></button>
+          <button class="btn-paginacion btn-paginacion--activo">{{ paginaActual() }}</button>
+          <button class="btn-icono" (click)="cambiarPagina(1)"
+            [disabled]="paginaActual() === totalPaginas()"><lucide-icon name="chevron-right"
+              [size]="16"></lucide-icon></button>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Modal Formulario -->
+  <!-- Modal Formulario -->
+  @if (mostrarModal()) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__titulo">
+          <div class="modal__icono-bg"><lucide-icon name="graduation-cap" [size]="18"></lucide-icon></div>
+          <div><strong>{{ editando() ? 'Editar Profesor' : 'Nuevo Profesor' }}</strong><span
+              class="modal__subtitulo">REGISTRO DOCENTE</span></div>
+        </div>
+        <button class="modal__cerrar" (click)="cerrarModal()"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="modal__body">
+
+        <!-- Fila 1: Persona + Código -->
+        <div class="campo-fila">
+          <div class="campo" [class.campo--error]="personIdInvalid">
+            <label>Persona *</label>
+            <select formControlName="personId" class="custom-select" [class.error]="personIdInvalid">
+              <option [ngValue]="null" disabled>— Seleccionar persona —</option>
+              @for (person of persons(); track person.id) {
+              <option [ngValue]="person.id">{{ getPersonDisplay(person) }}</option>
+              }
+            </select>
+            @if (!personIdInvalid) {
+            <span class="campo__hint">Busca por nombre o DNI</span>
+            }
+            @if (personIdInvalid) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              Selecciona una persona registrada
+            </div>
+            }
+          </div>
+
+          <div class="campo" [class.campo--error]="teacherCodeInvalid">
+            <label>Código de Profesor *</label>
+            <input formControlName="teacherCode" type="text" placeholder="Ej. PROF001" maxlength="15"
+              [class.error]="teacherCodeInvalid" />
+            @if (!teacherCodeInvalid) {
+            <span class="campo__hint">4–15 caracteres · letras, números y guiones</span>
+            }
+            @if (teacherCodeInvalid) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              {{ teacherCodeError }}
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Fila 2: Especialidad + Título Profesional -->
+        <div class="campo-fila">
+          <div class="campo" [class.campo--error]="specialtyInvalid">
+            <label>Especialidad *</label>
+            <input formControlName="specialty" type="text" placeholder="Ej. Matemática"
+              [class.error]="specialtyInvalid" />
+            @if (!specialtyInvalid) {
+            <span class="campo__hint">Solo letras y espacios · Ej. Matemática, Comunicación</span>
+            }
+            @if (specialtyInvalid) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              {{ specialtyError }}
+            </div>
+            }
+          </div>
+
+          <div class="campo" [class.campo--error]="professionalTitleInvalid">
+            <label>Título Profesional *</label>
+            <input formControlName="professionalTitle" type="text" placeholder="Ej. Licenciado en Educación Matemática"
+              [class.error]="professionalTitleInvalid" />
+            @if (!professionalTitleInvalid) {
+            <span class="campo__hint">Letras, números, puntos y espacios</span>
+            }
+            @if (professionalTitleInvalid) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              {{ professionalTitleError }}
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Fila 3: Fecha Contratación + Tipo Contrato -->
+        <div class="campo-fila">
+          <div class="campo" [class.campo--error]="hireDateInvalid">
+            <label>Fecha de Contratación *</label>
+            <input formControlName="hireDate" type="date" [class.error]="hireDateInvalid" />
+            @if (!hireDateInvalid) {
+            <span class="campo__hint">Fecha de ingreso del docente (no puede ser futura)</span>
+            }
+            @if (hireDateInvalid) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              {{ hireDateError }}
+            </div>
+            }
+          </div>
+          <div class="campo" [class.campo--error]="contractTypeInvalid">
+            <label>Tipo de Contrato *</label>
+            <select formControlName="contractType" class="custom-select" [class.error]="contractTypeInvalid">
+              <option [ngValue]="null" disabled>— Seleccionar tipo —</option>
+              <option value="PERMANENTE">Permanente (Nombrado)</option>
+              <option value="TEMPORAL">Temporal (Contratado)</option>
+              <option value="POR_HORAS">Por horas</option>
+            </select>
+            @if (contractTypeInvalid) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              Selecciona el tipo de contrato
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="modal__footer">
+          <button type="button" class="btn btn--secundario" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primario" [disabled]="form.invalid || cargandoSelects()">
+            {{ editando() ? 'Guardar Cambios' : 'Registrar Profesor' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  <!-- Rightbar Detalle -->
+  <div class="rightbar-overlay" [class.rightbar-overlay--visible]="mostrarDetalle()" (click)="cerrarDetalle()"></div>
+  <aside class="rightbar" [class.rightbar--open]="mostrarDetalle()">
+    @if (detalleCargando()) {
+    <div class="rightbar__header">
+      <div class="rightbar__header-info">
+        <div class="skeleton skeleton-circle"></div>
+        <div>
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="rightbar__body">
+      <div class="skeleton skeleton-rect" style="height:200px"></div>
+    </div>
+    } @else if (detalle(); as d) {
+    <div class="rightbar__header">
+      <div class="rightbar__header-info">
+        <div class="rightbar__icono-bg"><lucide-icon name="graduation-cap" [size]="18"></lucide-icon></div>
+        <div><strong>{{ d.personName }}</strong><span class="rightbar__subtitulo">Código: {{ d.teacherCode }}</span>
+        </div>
+      </div>
+      <button class="modal__cerrar" (click)="cerrarDetalle()"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+    </div>
+    <div class="rightbar__body">
+      <div class="rightbar__seccion">
+        <h3>Información Profesional</h3>
+        <div class="detalle-grid">
+          <div class="detalle-campo"><span class="detalle-campo__label">Código</span><span
+              class="detalle-campo__valor">{{ d.teacherCode }}</span></div>
+          <div class="detalle-campo"><span class="detalle-campo__label">Especialidad</span><span
+              class="detalle-campo__valor">{{ d.specialty || '—' }}</span></div>
+          <div class="detalle-campo"><span class="detalle-campo__label">Título Profesional</span><span
+              class="detalle-campo__valor">{{ d.professionalTitle || '—' }}</span></div>
+          <div class="detalle-campo"><span class="detalle-campo__label">Tipo Contrato</span><span
+              class="detalle-campo__valor">{{ getContractTypeLabel(d.contractType) }}</span></div>
+          <div class="detalle-campo"><span class="detalle-campo__label">Fecha Contratación</span><span
+              class="detalle-campo__valor">{{ formatearFecha(d.hireDate) }}</span></div>
+        </div>
+      </div>
+      <div class="rightbar__seccion">
+        <h3>Datos Personales</h3>
+        <div class="detalle-grid">
+          <div class="detalle-campo"><span class="detalle-campo__label">Persona</span><span
+              class="detalle-campo__valor">{{ d.personName }}</span></div>
+          <div class="detalle-campo"><span class="detalle-campo__label">DNI</span><span class="detalle-campo__valor">{{
+              d.personDocument || '—' }}</span></div>
+        </div>
+      </div>
+      <div class="rightbar__seccion">
+        <h3>Estado</h3>
+        <div class="detalle-grid">
+          <div class="detalle-campo"><span class="detalle-campo__label">Estado</span><span
+              class="detalle-campo__valor"><span class="etiqueta-estado" [class.etiqueta-estado--activo]="d.isActive">{{
+                d.isActive ? 'ACTIVO' : 'INACTIVO' }}</span></span></div>
+          <div class="detalle-campo"><span class="detalle-campo__label">Registrado</span><span
+              class="detalle-campo__valor">{{ formatearFecha(d.createdAt) }}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="rightbar__footer"><button class="btn btn--secundario" (click)="cerrarDetalle()">Cerrar</button><button
+        class="btn btn--primario" (click)="cerrarDetalle(); abrirModal(d)">Editar</button></div>
+    }
+  </aside>
+</div>

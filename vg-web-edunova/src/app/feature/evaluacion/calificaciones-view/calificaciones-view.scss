@@ -1,0 +1,442 @@
+.calificaciones-container {
+  width: 100%;
+  height: 100%;
+  background: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+// ============================================
+// HEADER
+// ============================================
+.calificaciones-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.criterios-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  gap: 0.75rem;
+}
+
+.criterio-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.6875rem; // 11px
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+
+  &.active {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: white;
+
+    svg {
+      color: white;
+    }
+  }
+}
+
+.selectores-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.selector-input {
+  padding: 0.625rem 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.75rem; // 12px
+  font-weight: 600;
+  color: #111827;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #d1d5db;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+}
+
+.btn-exportar {
+  width: 40px;
+  height: 40px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: #6b7280;
+  }
+
+  &:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+}
+
+// Header de tabla
+.tabla-header {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  padding: 0.875rem 1.5rem;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header-identificacion {
+  font-size: 0.625rem; // 10px
+  font-weight: 700;
+  color: #9ca3af;
+  letter-spacing: 0.5px;
+}
+
+.header-columnas {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+.header-col {
+  font-size: 0.625rem; // 10px
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: center;
+
+  &.tareas {
+    color: #3b82f6;
+  }
+
+  &.proyectos {
+    color: #10b981;
+  }
+
+  &.examenes {
+    color: #f59e0b;
+  }
+
+  &.participacion {
+    color: #8b5cf6;
+  }
+
+  &.promedio {
+    color: #6b7280;
+  }
+}
+
+// ============================================
+// TABLA DE ESTUDIANTES
+// ============================================
+.tabla-estudiantes {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 1.5rem 1.5rem 1.5rem;
+}
+
+.estudiante-fila {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-color: #d1d5db;
+  }
+}
+
+.estudiante-identificacion {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.estudiante-avatar {
+  width: 40px;
+  height: 40px;
+  background: #3b82f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem; // 14px
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.estudiante-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.estudiante-nombre {
+  font-size: 0.875rem; // 14px
+  font-weight: 600;
+  color: #111827;
+}
+
+.estudiante-matricula {
+  font-size: 0.6875rem; // 11px
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.estudiante-calificaciones {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.cal-col {
+  font-size: 0.875rem; // 14px
+  font-weight: 700;
+  text-align: center;
+
+  &.tareas {
+    color: #3b82f6;
+  }
+
+  &.proyectos {
+    color: #10b981;
+  }
+
+  &.examenes {
+    color: #f59e0b;
+  }
+
+  &.participacion {
+    color: #8b5cf6;
+  }
+
+  &.promedio-final {
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9375rem; // 15px
+    font-weight: 700;
+
+    &.promedio-excelente {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    &.promedio-bueno {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    &.promedio-regular {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    &.promedio-bajo {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+  }
+}
+
+// ============================================
+// PAGINACIÓN
+// ============================================
+.paginacion-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.paginacion-info {
+  font-size: 0.75rem; // 12px
+  color: #6b7280;
+}
+
+.paginacion-controles {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-paginacion {
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: #6b7280;
+  }
+
+  &:hover:not(:disabled) {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.btn-numero-pagina {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.75rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.75rem; // 12px
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+
+  &.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+  }
+}
+
+// ============================================
+// FOOTER
+// ============================================
+.calificaciones-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.estado-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  border-radius: 20px;
+  font-size: 0.6875rem; // 11px
+  font-weight: 600;
+  color: #065f46;
+  letter-spacing: 0.3px;
+
+  .estado-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.footer-text {
+  font-size: 0.75rem; // 12px
+  color: #6b7280;
+
+  strong {
+    font-weight: 700;
+    color: #111827;
+  }
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-footer-action {
+  padding: 0.625rem 1.25rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.75rem; // 12px
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #111827;
+  }
+}

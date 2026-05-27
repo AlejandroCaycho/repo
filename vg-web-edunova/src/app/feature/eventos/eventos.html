@@ -1,0 +1,36 @@
+<div class="ep">
+
+  <div class="ev-header">
+    <div class="ev-header__left">
+      <div class="ev-header__icon">
+        <lucide-icon [img]="Calendar" [size]="18" />
+      </div>
+      <div>
+        <h1 class="ev-header__title">Eventos</h1>
+        <p class="ev-header__sub">GESTIÓN DE TUTORÍAS Y ACTIVIDADES</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" [class.tab--on]="activeTab() === 'tutorias'"
+      (click)="setTab('tutorias')" role="tab">
+      <lucide-icon [img]="BookOpen" [size]="17" />
+      <span>Tutorías</span>
+    </button>
+    <button class="tab" [class.tab--on]="activeTab() === 'actividades'"
+      (click)="setTab('actividades')" role="tab">
+      <lucide-icon [img]="Calendar" [size]="17" />
+      <span>Actividades</span>
+    </button>
+  </div>
+
+  @if (activeTab() === 'tutorias') {
+    <app-tutorias />
+  }
+
+  @if (activeTab() === 'actividades') {
+    <app-actividades />
+  }
+
+</div>

@@ -1,0 +1,78 @@
+// Fuente
+$fuente-principal: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$alto-navbar: 64px;
+
+// Tamaños de fuente
+$texto-xs: 0.65rem;    // ~10px
+$texto-sm: 0.75rem;    // 12px
+$texto-base: 0.875rem; // 14px
+$texto-md: 1rem;       // 16px
+$texto-lg: 1.125rem;   // 18px
+$texto-xl: 1.5rem;     // 24px
+// Aliases compatibles
+$tamano-texto-sm: $texto-sm;
+$tamano-texto-base: $texto-base;
+$tamano-texto-xl: $texto-xl;
+
+
+// Colores principales
+$color-primario: #165EF0;
+$color-primario-claro: #e8f0fe;
+$color-texto-principal: #1e293b;
+$color-texto-secundario: #64748b;
+$color-fondo: #f8fafc;
+$color-fondo-tarjeta: #ffffff;
+$color-borde: #e2e8f0;
+$color-muted: #f1f5f9;
+$color-muted-foreground: #94a3b8;
+$color-ring: #165EF0;
+
+// Colores semánticos
+$primary: #165EF0;
+$primary-foreground: #ffffff;
+$secondary: #6366f1;
+$secondary-foreground: #ffffff;
+$accent: #10b981;
+$accent-foreground: #ffffff;
+$success: #10b981;
+$warning: #f59e0b;
+$danger: #ef4444;
+$dark: #0f172a;
+$gray: #64748b;
+$light-gray: #f1f5f9;
+$white: #ffffff;
+
+// Espaciados (Tailwind scale)
+$espaciado-xs: 4px;
+$espaciado-sm: 8px;
+$espaciado-md: 16px;
+$espaciado-lg: 24px;
+$espaciado-xl: 32px;
+$espaciado-2xl: 40px;
+
+// Radios de borde
+$radio-sm: 6px;
+$radio-md: 8px;
+$radio-lg: 12px;
+$radio-xl: 16px;
+$radio-full: 9999px;
+
+// Sombras
+$sombra-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+$sombra-md: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+$sombra-lg: 0 4px 24px rgba(0, 0, 0, 0.12);
+$sombra-xl: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+$sombra-ring: 0 0 0 3px rgba(22, 94, 240, 0.15);
+
+// Bordes
+$border: 1px solid #e2e8f0;
+$border-primary: 1px solid #165EF0;
+
+// Sidebar tokens
+$sidebar-bg: #ffffff;
+$sidebar-foreground: #0f172a;
+$sidebar-primary: #165EF0;
+$sidebar-primary-foreground: #ffffff;
+$sidebar-accent: #f1f5f9;
+$sidebar-accent-foreground: #0f172a;
+$sidebar-border: #e2e8f0;

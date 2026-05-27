@@ -1,0 +1,362 @@
+// ════════════════════════════════════════════════════════════
+// Actividades & Tutorías — diseño limpio según captura
+// ════════════════════════════════════════════════════════════
+
+$blue:    #2563eb;  $blue-d: #1d4ed8;  $blue-l: #dbeafe;  $blue-xl: #eff6ff;
+$indigo:  #6366f1;  $indigo-xl: #eef2ff;
+$purple:  #7c3aed;  $purple-xl: #f5f3ff;
+$green:   #16a34a;  $green-l: #bbf7d0;  $green-xl: #f0fdf4;
+$red:     #dc2626;  $red-l: #fecaca;    $red-xl: #fef2f2;
+$amber:   #d97706;  $amber-l: #fde68a;  $amber-xl: #fffbeb;
+$teal:    #0d9488;  $teal-xl: #f0fdfa;
+$slate-50: #f8fafc; $slate-100: #f1f5f9; $slate-200: #e2e8f0;
+$slate-300: #cbd5e1; $slate-400: #94a3b8; $slate-500: #64748b;
+$slate-600: #475569; $slate-700: #334155; $slate-800: #1e293b; $slate-900: #0f172a;
+
+// ── Root ─────────────────────────────────────────────────────
+.ep { display: flex; flex-direction: column; gap: 1.25rem; }
+
+// ── Menú de secciones ─────────────────────────────────────────
+.sec-menu { padding: .25rem 0 .5rem; }
+
+.sec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: .875rem;
+}
+
+// ── Card horizontal limpia (como en la captura) ───────────────
+.sec-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.125rem 1.25rem;
+  background: #fff;
+  border: 1px solid $slate-200;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    transform: translateY(-2px);
+    border-color: $slate-300;
+  }
+
+  &__icon {
+    width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    lucide-icon { width: 22px; height: 22px; }
+  }
+
+  &__body {
+    flex: 1; min-width: 0;
+    h3 { font-size: .9rem; font-weight: 700; color: $slate-900; margin: 0 0 .2rem; line-height: 1.3; }
+    p  { font-size: .78rem; color: $slate-500; margin: 0; line-height: 1.3; }
+  }
+
+  &__arrow {
+    color: $slate-300; flex-shrink: 0;
+    lucide-icon { width: 16px; height: 16px; }
+  }
+
+  &--blue   { .sec-card__icon { background: $blue-xl;   color: $blue; } }
+  &--indigo { .sec-card__icon { background: $indigo-xl; color: $indigo; } }
+  &--purple { .sec-card__icon { background: $purple-xl; color: $purple; } }
+  &--green  { .sec-card__icon { background: $green-xl;  color: $green; } }
+  &--red    { .sec-card__icon { background: $red-xl;    color: $red; } }
+  &--amber  { .sec-card__icon { background: $amber-xl;  color: $amber; } }
+  &--teal   { .sec-card__icon { background: $teal-xl;   color: $teal; } }
+  &--slate  { .sec-card__icon { background: $slate-100; color: $slate-500; } }
+}
+
+// ── Vista de sección ──────────────────────────────────────────
+.sec-view { display: flex; flex-direction: column; gap: 1rem; }
+
+.topbar {
+  display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+  .breadcrumb {
+    margin-left: auto; font-size: .82rem; color: $slate-400;
+    display: flex; align-items: center; gap: .35rem;
+    span { color: $slate-600; font-weight: 500; }
+  }
+}
+
+// ── Card section ──────────────────────────────────────────────
+.card-section {
+  background: #fff;
+  border: 1px solid $slate-200;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+
+.cs-head {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: .875rem; padding: 1rem 1.25rem;
+  border-bottom: 1px solid $slate-100;
+  &__left { display: flex; align-items: center; gap: .75rem; }
+  &__right { display: flex; align-items: center; gap: .625rem; flex-wrap: wrap; }
+}
+
+.cs-icon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  lucide-icon { width: 20px; height: 20px; }
+  &--blue   { background: $blue-xl;   color: $blue; }
+  &--indigo { background: $indigo-xl; color: $indigo; }
+  &--purple { background: $purple-xl; color: $purple; }
+  &--green  { background: $green-xl;  color: $green; }
+  &--red    { background: $red-xl;    color: $red; }
+  &--amber  { background: $amber-xl;  color: $amber; }
+  &--teal   { background: $teal-xl;   color: $teal; }
+  &--slate  { background: $slate-100; color: $slate-500; }
+}
+
+.cs-title { font-size: .9375rem; font-weight: 700; color: $slate-900; margin: 0; }
+.cs-sub   { font-size: .78rem; color: $slate-500; margin: 0; }
+
+.cs-empty {
+  display: flex; flex-direction: column; align-items: center;
+  gap: .75rem; padding: 3rem 1.5rem; color: $slate-300; text-align: center;
+  lucide-icon { width: 38px; height: 38px; }
+  h3 { font-size: .9375rem; font-weight: 600; color: $slate-500; margin: 0; }
+  p  { font-size: .82rem; color: $slate-400; margin: 0; }
+}
+
+.sbox {
+  display: flex; align-items: center; gap: .75rem;
+  padding: 1.25rem 1.5rem; font-size: .875rem;
+  &--load { color: $blue; }
+  &--err  { color: $red; background: $red-xl; border-radius: 8px; margin: 1rem 1.25rem; }
+}
+
+// ── Tabla — exactamente como en la captura ────────────────────
+.tbl-wrap { overflow-x: auto; }
+
+.tbl {
+  width: 100%; border-collapse: collapse; font-size: .875rem;
+
+  thead tr {
+    background: $slate-50;
+    border-bottom: 1px solid $slate-200;
+  }
+
+  th {
+    padding: .75rem 1.25rem; text-align: left;
+    font-size: .7rem; font-weight: 700; color: $slate-400;
+    text-transform: uppercase; letter-spacing: .08em; white-space: nowrap;
+  }
+
+  td {
+    padding: .9rem 1.25rem;
+    border-bottom: 1px solid $slate-100;
+    color: $slate-700; vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: $slate-50; }
+}
+
+// ID con # gris — exactamente como en la captura
+.td-id {
+  width: 64px; font-size: .82rem; font-weight: 600; color: $slate-400;
+  &::before { content: '#'; color: $slate-300; }
+}
+
+// Nombre en negrita
+.td-trunc {
+  max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-weight: 600; color: $slate-900;
+}
+
+// ── Badges ────────────────────────────────────────────────────
+.badge {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .25rem .65rem; border-radius: 999px;
+  font-size: .75rem; font-weight: 600; white-space: nowrap;
+  border: 1px solid transparent;
+
+  &--activo      { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+  &--inactivo    { background: $slate-100; color: $slate-500; border-color: $slate-200; }
+  &--deportivo   { background: $blue-xl;   color: $blue;   border-color: $blue-l; }
+  &--artistico   { background: $purple-xl; color: $purple; border-color: #ddd6fe; }
+  &--musical     { background: $amber-xl;  color: $amber;  border-color: $amber-l; }
+  &--academico   { background: $indigo-xl; color: $indigo; border-color: #c7d2fe; }
+  &--cultural    { background: $teal-xl;   color: $teal;   border-color: #99f6e4; }
+  &--retirado    { background: $red-xl;    color: $red;    border-color: $red-l; }
+  &--finalizado  { background: $slate-100; color: $slate-500; border-color: $slate-200; }
+  &--suspendido  { background: $amber-xl;  color: $amber;  border-color: $amber-l; }
+  &--aprobado    { background: #f0fdf4;    color: #16a34a; border-color: #bbf7d0; }
+  &--desaprobado { background: $red-xl;    color: $red;    border-color: $red-l; }
+  &--recuperacion{ background: $blue-xl;   color: $blue;   border-color: $blue-l; }
+  &--vacacional  { background: $amber-xl;  color: $amber;  border-color: $amber-l; }
+  &--leve        { background: #f0fdf4;    color: #16a34a; border-color: #bbf7d0; }
+  &--moderada    { background: $amber-xl;  color: $amber;  border-color: $amber-l; }
+  &--grave       { background: $red-xl;    color: $red;    border-color: $red-l; }
+  &--muy_grave   { background: #fdf2f8;    color: #be185d; border-color: #fbcfe8; }
+}
+
+.bdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+// ── Acciones ──────────────────────────────────────────────────
+.acts { display: flex; gap: .25rem; align-items: center; }
+
+.ab {
+  width: 28px; height: 28px; border-radius: 6px;
+  border: 1px solid transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s ease; flex-shrink: 0;
+  lucide-icon { width: 13px; height: 13px; }
+
+  &--edit    { background: $blue-xl;   color: $blue;   border-color: $blue-l;   &:hover { background: $blue-l; } }
+  &--toggle  { background: $slate-50;  color: $slate-500; border-color: $slate-200; &:hover { background: $slate-100; } }
+  &--del     { background: $red-xl;    color: $red;    border-color: $red-l;    &:hover { background: $red-l; } }
+  &--restore { background: #f0fdf4;    color: #16a34a; border-color: #bbf7d0;   &:hover { background: #dcfce7; } }
+  &--view    { background: $blue-xl;   color: $blue;   border-color: $blue-l;   &:hover { background: $blue-l; } }
+  &--soft-del{ background: $amber-xl;  color: $amber;  border-color: $amber-l;  &:hover { background: $amber-l; } }
+}
+
+// ── Botones ───────────────────────────────────────────────────
+.btn {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .4rem .75rem; border-radius: 7px;
+  font-size: .8125rem; font-weight: 600; cursor: pointer;
+  border: none; font-family: inherit; transition: all .12s ease; white-space: nowrap;
+  lucide-icon { width: 13px; height: 13px; flex-shrink: 0; stroke-width: 2.5; }
+
+  &--primary {
+    background: $blue; color: white;
+    box-shadow: 0 1px 2px rgba(37,99,235,.2);
+    &:hover:not(:disabled) { background: $blue-d; }
+    &:disabled { opacity: .55; cursor: not-allowed; }
+  }
+  &--ghost {
+    background: white; color: $slate-600; border: 1px solid $slate-200;
+    &:hover { background: $slate-50; border-color: $slate-300; }
+  }
+  &--sm { padding: .3rem .6rem; font-size: .75rem; lucide-icon { width: 12px; height: 12px; } }
+}
+
+// ── Filter pills — segmented control como en la captura ───────
+.filter-pills {
+  display: flex; gap: 0;
+  background: $slate-100; border-radius: 8px; padding: .2rem;
+}
+
+.fpill {
+  display: inline-flex; align-items: center; gap: .375rem;
+  padding: .3rem .75rem; border: none; background: transparent;
+  border-radius: 6px; font-size: .8125rem; font-weight: 500;
+  color: $slate-500; cursor: pointer; transition: all .15s ease;
+  font-family: inherit; white-space: nowrap;
+  &:hover { background: $slate-200; color: $slate-700; }
+  &--on   { background: white; color: $slate-900; font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+}
+
+.count-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; padding: .05rem .4rem; border-radius: 999px;
+  font-size: .7rem; font-weight: 700;
+  background: rgba(0,0,0,.06); color: $slate-600;
+  .fpill--on & { background: $blue; color: white; }
+}
+
+// ── Time chip ─────────────────────────────────────────────────
+.tchip {
+  display: inline-flex; align-items: center; gap: .3rem;
+  font-size: .8125rem; color: $slate-600;
+  background: $slate-100; padding: .2rem .5rem; border-radius: 6px;
+}
+
+// ── Detail box ────────────────────────────────────────────────
+.detail-box {
+  margin: 1rem 1.25rem; padding: 1rem 1.25rem;
+  background: $slate-50; border: 1px solid $slate-200; border-radius: 10px;
+  h4 { font-size: .875rem; font-weight: 600; color: $slate-900; margin: 0 0 .75rem; }
+  p  { font-size: .84rem; color: $slate-700; margin: 0 0 .4rem; }
+}
+
+// ── Modal ─────────────────────────────────────────────────────
+.mbk {
+  position: fixed; inset: 0; background: rgba(15,23,42,.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 1rem; backdrop-filter: blur(2px);
+}
+
+.mdl {
+  background: white; border-radius: 16px; width: 100%; max-width: 560px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.18);
+  display: flex; flex-direction: column; max-height: 90vh; overflow: hidden;
+
+  &--lg { max-width: 700px; }
+
+  &__hd {
+    display: flex; align-items: center; gap: .75rem;
+    padding: 1.125rem 1.5rem; border-bottom: 1px solid $slate-100; flex-shrink: 0;
+    h3 { flex: 1; font-size: .975rem; font-weight: 700; color: $slate-900; margin: 0; }
+  }
+
+  &__hd-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    lucide-icon { width: 18px; height: 18px; }
+    &--blue   { background: $blue-xl;   color: $blue; }
+    &--indigo { background: $indigo-xl; color: $indigo; }
+    &--purple { background: $purple-xl; color: $purple; }
+    &--green  { background: #f0fdf4;    color: #16a34a; }
+    &--red    { background: $red-xl;    color: $red; }
+    &--amber  { background: $amber-xl;  color: $amber; }
+    &--teal   { background: $teal-xl;   color: $teal; }
+  }
+
+  &__x {
+    width: 30px; height: 30px; border-radius: 7px;
+    border: 1px solid $slate-200; background: $slate-50; color: $slate-500;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .15s ease; flex-shrink: 0;
+    &:hover { background: $slate-100; color: $slate-800; }
+    lucide-icon { width: 15px; height: 15px; }
+  }
+
+  &__bd { flex: 1; overflow-y: auto; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: .875rem; }
+
+  &__ft {
+    display: flex; justify-content: flex-end; gap: .625rem;
+    padding: .875rem 1.5rem; border-top: 1px solid $slate-100;
+    background: $slate-50; border-radius: 0 0 16px 16px; flex-shrink: 0;
+  }
+}
+
+// ── Formulario ────────────────────────────────────────────────
+.fg  { display: flex; flex-direction: column; gap: .3rem; }
+.fl  { font-size: .8125rem; font-weight: 600; color: $slate-600; }
+.fi  {
+  padding: .5rem .75rem; border: 1px solid $slate-200; border-radius: 8px;
+  font-size: .875rem; color: $slate-900; background: white;
+  font-family: inherit; transition: border-color .15s, box-shadow .15s; width: 100%;
+  &:focus { outline: none; border-color: $blue; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+  &::placeholder { color: $slate-300; }
+}
+select.fi { cursor: pointer; }
+textarea.fi { resize: vertical; min-height: 64px; }
+.fe  { font-size: .74rem; color: $red; font-weight: 500; }
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.fchk {
+  display: flex; align-items: center; gap: .5rem;
+  input[type=checkbox] { width: 16px; height: 16px; accent-color: $blue; cursor: pointer; }
+  label { font-size: .875rem; color: $slate-700; cursor: pointer; }
+}
+
+.fhint {
+  font-size: .75rem; font-weight: 500; color: #16a34a;
+  display: flex; align-items: center; gap: .25rem;
+  padding: .2rem .5rem; background: #f0fdf4; border-radius: 6px;
+  border: 1px solid #bbf7d0; margin-top: .1rem;
+  &--err { color: $red; background: $red-xl; border-color: $red-l; }
+}
+
+// ── Spin ──────────────────────────────────────────────────────
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

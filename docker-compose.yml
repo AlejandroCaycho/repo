@@ -1,0 +1,30 @@
+services:
+  vg-ms-auth:
+    build:
+      context: ./vg-ms-auth
+      dockerfile: Dockerfile
+    container_name: vg-ms-auth
+    ports:
+      - "8081:8081"
+    env_file:
+      - ./vg-ms-auth/.env
+    networks:
+      - edunova-network
+    restart: unless-stopped
+
+  vg-web-edunova:
+    build:
+      context: ./vg-web-edunova
+      dockerfile: Dockerfile
+    container_name: vg-web-edunova
+    ports:
+      - "4200:80"
+    depends_on:
+      - vg-ms-auth
+    networks:
+      - edunova-network
+    restart: unless-stopped
+
+networks:
+  edunova-network:
+    driver: bridge

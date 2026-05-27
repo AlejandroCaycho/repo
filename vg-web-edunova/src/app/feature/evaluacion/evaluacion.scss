@@ -1,0 +1,104 @@
+.evaluacion-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #f9fafb;
+  margin: -2rem;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.evaluacion-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0;
+
+  .header-content {
+    padding: 0.75rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .icon-container {
+      width: 40px;
+      height: 40px;
+      background: #dbeafe;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      svg {
+        width: 20px;
+        height: 20px;
+        color: #3b82f6;
+      }
+    }
+
+    .title-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      h1 {
+        font-size: 0.875rem; // 14px
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      p {
+        font-size: 0.625rem; // 10px
+        color: #9ca3af;
+        margin: 0.125rem 0 0 0;
+        letter-spacing: 0.3px;
+        font-weight: 400;
+        line-height: 1.2;
+      }
+    }
+  }
+
+  .header-tabs {
+    display: flex;
+    gap: 0.625rem;
+    align-items: center;
+
+    .tab {
+      padding: 0.625rem 1.5rem;
+      background: #f3f4f6;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.6875rem; // 11px
+      font-weight: 600;
+      color: #4b5563;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+
+      &:hover {
+        background: #e5e7eb;
+        color: #111827;
+      }
+
+      &.active {
+        background: white;
+        color: #3b82f6;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+      }
+    }
+  }
+}
+
+.evaluacion-content {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}

@@ -1,0 +1,1041 @@
+<div class="ep">
+
+  <!-- ===== MENÚ PRINCIPAL ===== -->
+  @if (seccionActividad() === 'menu') {
+    <div class="sec-menu">
+      <div class="sec-grid">
+
+        <div class="sec-card sec-card--blue" (click)="irSeccionActividad('talleres')">
+          <div class="sec-card__icon"><lucide-icon [img]="Dumbbell" /></div>
+          <div class="sec-card__body">
+            <h3>Talleres</h3>
+            <p>Gestión de talleres extracurriculares</p>
+          </div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+
+        <div class="sec-card sec-card--indigo" (click)="irSeccionActividad('talleresEst')">
+          <div class="sec-card__icon"><lucide-icon [img]="UserPlus" /></div>
+          <div class="sec-card__body">
+            <h3>Inscripciones a Talleres</h3>
+            <p>Estudiantes inscritos por taller</p>
+          </div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+
+        <div class="sec-card sec-card--purple" (click)="irSeccionActividad('programasRecup')">
+          <div class="sec-card__icon"><lucide-icon [img]="BookMarked" /></div>
+          <div class="sec-card__body">
+            <h3>Programas de Recuperación</h3>
+            <p>Recuperación y vacacional</p>
+          </div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+
+        <div class="sec-card sec-card--green" (click)="irSeccionActividad('programasRecupEst')">
+          <div class="sec-card__icon"><lucide-icon [img]="UserPlus" /></div>
+          <div class="sec-card__body">
+            <h3>Inscripciones a Recuperación</h3>
+            <p>Estudiantes en programas de recuperación</p>
+          </div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+
+        <div class="sec-card sec-card--red" (click)="irSeccionActividad('eventosInst')">
+          <div class="sec-card__icon"><lucide-icon [img]="CalendarDays" /></div>
+          <div class="sec-card__body">
+            <h3>Eventos Institucionales</h3>
+            <p>Aniversarios, desfiles, olimpiadas...</p>
+          </div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+
+        <div class="sec-card sec-card--amber" (click)="irSeccionActividad('participaciones')">
+          <div class="sec-card__icon"><lucide-icon [img]="Award" /></div>
+          <div class="sec-card__body">
+            <h3>Participaciones Estudiantiles</h3>
+            <p>Concursos, olimpiadas y logros</p>
+          </div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ===== SECCIÓN TALLERES ===== -->
+  @if (seccionActividad() === 'talleres') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenuActividad()">
+          <lucide-icon [img]="ArrowLeft" size="13" />Volver
+        </button>
+        <span class="breadcrumb">Actividades / Talleres</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--blue"><lucide-icon [img]="Dumbbell" /></div>
+            <div><h2 class="cs-title">Talleres</h2><p class="cs-sub">Gestión de talleres</p></div>
+          </div>
+          <div class="cs-head__right">
+            <div class="filter-pills">
+              <button class="fpill" [class.fpill--on]="filtroTaller()==='todos'" (click)="filtroTaller.set('todos')">Todos <span class="count-chip">{{countTaller().todos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroTaller()==='activos'" (click)="filtroTaller.set('activos')">Activos <span class="count-chip">{{countTaller().activos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroTaller()==='inactivos'" (click)="filtroTaller.set('inactivos')">Inactivos <span class="count-chip">{{countTaller().inactivos}}</span></button>
+            </div>
+            <button class="btn btn--primary" (click)="openCreateTaller()"><lucide-icon [img]="Plus" size="14" />Nuevo Taller</button>
+          </div>
+        </div>
+        @if (loadingAct()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (errorAct()) { <div class="sbox sbox--err"><p>{{errorAct()}}</p></div> }
+        @if (!loadingAct() && !errorAct() && talleres().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="Dumbbell" /><h3>Sin talleres</h3><p>Crea el primer taller</p><button class="btn btn--primary" (click)="openCreateTaller()"><lucide-icon [img]="Plus" />Crear</button></div>
+        }
+        @if (!loadingAct() && talleres().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Nombre</th><th>Categoría</th><th>Día</th><th>Horario</th><th>Cupo</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (t of talleres(); track t.id) {
+                <tr>
+                  <td class="td-id">{{t.id}}</td>
+                  <td class="td-trunc">{{t.nombre}}</td>
+                  <td><span class="badge badge--{{t.categoria}}">{{t.categoria}}</span></td>
+                  <td>{{t.diaSemana || '-'}}</td>
+                  <td>@if(t.horaInicio && t.horaFin){<span class="tchip">{{t.horaInicio}} - {{t.horaFin}}</span>}@else{-}</td>
+                  <td>{{t.cupoMaximo || '-'}}</td>
+                  <td><span class="badge" [class]="t.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{t.isActive ? 'Activo' : 'Inactivo'}}</span></td>
+                  <td><div class="acts">
+                    <button class="ab ab--view" (click)="verDetalleTaller(t)" title="Ver detalle"><lucide-icon [img]="Eye" size="13" /></button>
+                    <button class="ab ab--edit" (click)="openEditTaller(t)" title="Editar"><lucide-icon [img]="Pencil" size="13" /></button>
+                    <button class="ab ab--toggle" (click)="toggleTaller(t)" [title]="t.isActive ? 'Desactivar' : 'Activar'"><lucide-icon [img]="t.isActive ? ToggleRight : ToggleLeft" size="13" /></button>
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+        @if (cargandoDetalle() && !detalleTaller()) {
+          <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando detalle...</p></div>
+        }
+        @if (detalleTaller()) {
+          <div class="detail-box">
+            <div class="detail-box__hd">
+              <h4>Detalle del Taller #{{detalleTaller()!.registro.id}}</h4>
+              <button class="btn btn--ghost btn--sm" (click)="detalleTaller.set(null)">Cerrar</button>
+            </div>
+            <div class="detail-box__grid">
+              <div class="detail-box__item"><span class="detail-box__lbl">Nombre</span><span>{{detalleTaller()!.registro.nombre}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Categoría</span><span class="badge badge--{{detalleTaller()!.registro.categoria}}">{{detalleTaller()!.registro.categoria}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Institución</span><span>{{detalleTaller()!.nombreInstitucion}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Profesor responsable</span><span>{{detalleTaller()!.nombreProfesor}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Aula</span><span>{{detalleTaller()!.nombreAula}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Día</span><span>{{detalleTaller()!.registro.diaSemana || '—'}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Horario</span>
+                <span>@if(detalleTaller()!.registro.horaInicio && detalleTaller()!.registro.horaFin){<span class="tchip">{{detalleTaller()!.registro.horaInicio}} – {{detalleTaller()!.registro.horaFin}}</span>}@else{—}</span>
+              </div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Cupo máximo</span><span>{{detalleTaller()!.registro.cupoMaximo ?? '—'}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Requiere autorización</span><span>{{detalleTaller()!.registro.requiereAutorizacion ? 'Sí' : 'No'}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Estado</span><span class="badge" [class]="detalleTaller()!.registro.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{detalleTaller()!.registro.isActive ? 'Activo' : 'Inactivo'}}</span></div>
+              @if (detalleTaller()!.registro.descripcion) {
+                <div class="detail-box__item detail-box__item--full"><span class="detail-box__lbl">Descripción</span><span>{{detalleTaller()!.registro.descripcion}}</span></div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== SECCIÓN INSCRIPCIONES TALLERES ===== -->
+  @if (seccionActividad() === 'talleresEst') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenuActividad()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Actividades / Inscripciones a Talleres</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--indigo"><lucide-icon [img]="UserPlus" /></div>
+            <div><h2 class="cs-title">Inscripciones a Talleres</h2><p class="cs-sub">Registro de estudiantes en talleres</p></div>
+          </div>
+          <div class="cs-head__right">
+            <div class="filter-pills">
+              <button class="fpill" [class.fpill--on]="filtroTallerEst()==='todos'" (click)="filtroTallerEst.set('todos')">Todos <span class="count-chip">{{countTallerEst().todos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroTallerEst()==='activos'" (click)="filtroTallerEst.set('activos')">Activos <span class="count-chip">{{countTallerEst().activos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroTallerEst()==='inactivos'" (click)="filtroTallerEst.set('inactivos')">Inactivos <span class="count-chip">{{countTallerEst().inactivos}}</span></button>
+            </div>
+            <button class="btn btn--primary" (click)="openCreateTallerEst()"><lucide-icon [img]="Plus" size="14" />Nueva Inscripción</button>
+          </div>
+        </div>
+        @if (loadingAct()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loadingAct() && talleresEst().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="UserPlus" /><h3>Sin inscripciones</h3><p>Registra la primera inscripción</p><button class="btn btn--primary" (click)="openCreateTallerEst()"><lucide-icon [img]="Plus" />Crear</button></div>
+        }
+        @if (!loadingAct() && talleresEst().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Taller ID</th><th>Estudiante ID</th><th>Fecha Inscripción</th><th>Estado</th><th>Estado Reg.</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (t of talleresEst(); track t.id) {
+                <tr>
+                  <td class="td-id">{{t.id}}</td>
+                  <td>{{t.tallerId}}</td>
+                  <td>{{t.estudianteId}}</td>
+                  <td>{{t.fechaInscripcion || '-'}}</td>
+                  <td><span class="badge badge--{{t.estado}}">{{t.estado}}</span></td>
+                  <td><span class="badge" [class]="t.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{t.isActive ? 'Activo' : 'Inactivo'}}</span></td>
+                  <td><div class="acts">
+                    <button class="ab ab--view" (click)="verDetalleTallerEst(t)" title="Ver detalle"><lucide-icon [img]="Eye" size="13" /></button>
+                    <button class="ab ab--edit" (click)="openEditTallerEst(t)" title="Editar"><lucide-icon [img]="Pencil" size="13" /></button>
+                    @if (t.isActive) {
+                      <button class="ab ab--del" (click)="softDeleteTallerEst(t)" title="Eliminar"><lucide-icon [img]="Trash2" size="13" /></button>
+                    } @else {
+                      <button class="ab ab--restore" (click)="restaurarTallerEst(t)" title="Restaurar"><lucide-icon [img]="RotateCcw" size="13" /></button>
+                    }
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+        <!-- Detalle -->
+        @if (cargandoDetalle() && !detalleTallerEst()) {
+          <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando detalle...</p></div>
+        }
+        @if (detalleTallerEst()) {
+          <div class="detail-box">
+            <div class="detail-box__hd">
+              <h4>Detalle de Inscripción #{{detalleTallerEst()!.registro.id}}</h4>
+              <button class="btn btn--ghost btn--sm" (click)="detalleTallerEst.set(null)">Cerrar</button>
+            </div>
+            <div class="detail-box__grid">
+              <div class="detail-box__item"><span class="detail-box__lbl">Taller</span><span>{{detalleTallerEst()!.nombreTaller}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Estudiante</span><span>{{detalleTallerEst()!.nombreEstudiante}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Fecha inscripción</span><span>{{detalleTallerEst()!.registro.fechaInscripcion || '—'}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Estado</span><span class="badge badge--{{detalleTallerEst()!.registro.estado}}">{{detalleTallerEst()!.registro.estado}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Registro</span><span class="badge" [class]="detalleTallerEst()!.registro.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{detalleTallerEst()!.registro.isActive ? 'Activo' : 'Inactivo'}}</span></div>
+              @if (detalleTallerEst()!.registro.observaciones) {
+                <div class="detail-box__item detail-box__item--full"><span class="detail-box__lbl">Observaciones</span><span>{{detalleTallerEst()!.registro.observaciones}}</span></div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== SECCIÓN PROGRAMAS RECUPERACIÓN ===== -->
+  @if (seccionActividad() === 'programasRecup') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenuActividad()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Actividades / Programas de Recuperación</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--purple"><lucide-icon [img]="BookMarked" /></div>
+            <div><h2 class="cs-title">Programas de Recuperación</h2><p class="cs-sub">Programas de recuperación y vacacionales</p></div>
+          </div>
+          <div class="cs-head__right">
+            <div class="filter-pills">
+              <button class="fpill" [class.fpill--on]="filtroProgramaRecup()==='todos'" (click)="filtroProgramaRecup.set('todos')">Todos <span class="count-chip">{{countProgramaRecup().todos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroProgramaRecup()==='activos'" (click)="filtroProgramaRecup.set('activos')">Activos <span class="count-chip">{{countProgramaRecup().activos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroProgramaRecup()==='inactivos'" (click)="filtroProgramaRecup.set('inactivos')">Inactivos <span class="count-chip">{{countProgramaRecup().inactivos}}</span></button>
+            </div>
+            <button class="btn btn--primary" (click)="openCreateProgramaRecup()"><lucide-icon [img]="Plus" size="14" />Nuevo Programa</button>
+          </div>
+        </div>
+        @if (loadingAct()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loadingAct() && programasRecup().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="BookMarked" /><h3>Sin programas</h3><p>Crea el primer programa</p><button class="btn btn--primary" (click)="openCreateProgramaRecup()"><lucide-icon [img]="Plus" />Crear</button></div>
+        }
+        @if (!loadingAct() && programasRecup().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Nombre</th><th>Tipo</th><th>Fecha Inicio</th><th>Fecha Fin</th><th>Capacidad</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (p of programasRecup(); track p.id) {
+                <tr>
+                  <td class="td-id">{{p.id}}</td>
+                  <td class="td-trunc">{{p.nombre}}</td>
+                  <td><span class="badge badge--{{p.tipo}}">{{p.tipo}}</span></td>
+                  <td>{{p.fechaInicio}}</td>
+                  <td>{{p.fechaFin}}</td>
+                  <td>{{p.capacidadMax || '-'}}</td>
+                  <td><span class="badge" [class]="p.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{p.isActive ? 'Activo' : 'Inactivo'}}</span></td>
+                  <td><div class="acts">
+                    <button class="ab ab--view" (click)="verDetalleProgRecup(p)" title="Ver detalle"><lucide-icon [img]="Eye" size="13" /></button>
+                    <button class="ab ab--edit" (click)="openEditProgramaRecup(p)" title="Editar"><lucide-icon [img]="Pencil" size="13" /></button>
+                    <button class="ab ab--toggle" (click)="toggleProgramaRecup(p)" [title]="p.isActive ? 'Desactivar' : 'Activar'"><lucide-icon [img]="p.isActive ? ToggleRight : ToggleLeft" size="13" /></button>
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+        @if (cargandoDetalle() && !detalleProgRecup()) {
+          <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando detalle...</p></div>
+        }
+        @if (detalleProgRecup()) {
+          <div class="detail-box">
+            <div class="detail-box__hd">
+              <h4>Detalle del Programa #{{detalleProgRecup()!.registro.id}}</h4>
+              <button class="btn btn--ghost btn--sm" (click)="detalleProgRecup.set(null)">Cerrar</button>
+            </div>
+            <div class="detail-box__grid">
+              <div class="detail-box__item"><span class="detail-box__lbl">Nombre</span><span>{{detalleProgRecup()!.registro.nombre}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Tipo</span><span class="badge badge--{{detalleProgRecup()!.registro.tipo}}">{{detalleProgRecup()!.registro.tipo}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Institución</span><span>{{detalleProgRecup()!.nombreInstitucion}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Profesor</span><span>{{detalleProgRecup()!.nombreProfesor}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Materia</span><span>{{detalleProgRecup()!.nombreMateria}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Aula</span><span>{{detalleProgRecup()!.nombreAula}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Fecha inicio</span><span>{{detalleProgRecup()!.registro.fechaInicio}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Fecha fin</span><span>{{detalleProgRecup()!.registro.fechaFin}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Horario</span>
+                <span>@if(detalleProgRecup()!.registro.horaInicio && detalleProgRecup()!.registro.horaFin){<span class="tchip">{{detalleProgRecup()!.registro.horaInicio}} – {{detalleProgRecup()!.registro.horaFin}}</span>}@else{—}</span>
+              </div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Capacidad máx.</span><span>{{detalleProgRecup()!.registro.capacidadMax ?? '—'}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Estado</span><span class="badge" [class]="detalleProgRecup()!.registro.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{detalleProgRecup()!.registro.isActive ? 'Activo' : 'Inactivo'}}</span></div>
+              @if (detalleProgRecup()!.registro.descripcion) {
+                <div class="detail-box__item detail-box__item--full"><span class="detail-box__lbl">Descripción</span><span>{{detalleProgRecup()!.registro.descripcion}}</span></div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== SECCIÓN INSCRIPCIONES PROGRAMAS RECUPERACIÓN ===== -->
+  @if (seccionActividad() === 'programasRecupEst') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenuActividad()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Actividades / Inscripciones a Programas</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--green"><lucide-icon [img]="UserPlus" /></div>
+            <div><h2 class="cs-title">Inscripciones a Programas</h2><p class="cs-sub">Estudiantes en programas de recuperación</p></div>
+          </div>
+          <div class="cs-head__right">
+            <div class="filter-pills">
+              <button class="fpill" [class.fpill--on]="filtroProgramaRecupEst()==='todos'" (click)="filtroProgramaRecupEst.set('todos')">Todos <span class="count-chip">{{countProgramaRecupEst().todos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroProgramaRecupEst()==='activos'" (click)="filtroProgramaRecupEst.set('activos')">Activos <span class="count-chip">{{countProgramaRecupEst().activos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroProgramaRecupEst()==='inactivos'" (click)="filtroProgramaRecupEst.set('inactivos')">Inactivos <span class="count-chip">{{countProgramaRecupEst().inactivos}}</span></button>
+            </div>
+            <button class="btn btn--primary" (click)="openCreateProgramaRecupEst()"><lucide-icon [img]="Plus" size="14" />Nueva Inscripción</button>
+          </div>
+        </div>
+        @if (loadingAct()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loadingAct() && programasRecupEst().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="UserPlus" /><h3>Sin inscripciones</h3><p>Registra la primera inscripción</p><button class="btn btn--primary" (click)="openCreateProgramaRecupEst()"><lucide-icon [img]="Plus" />Crear</button></div>
+        }
+        @if (!loadingAct() && programasRecupEst().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Programa ID</th><th>Estudiante ID</th><th>Fecha Inscripción</th><th>Estado</th><th>Promedio</th><th>Estado Reg.</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (p of programasRecupEst(); track p.id) {
+                <tr>
+                  <td class="td-id">{{p.id}}</td>
+                  <td>{{p.programaId}}</td>
+                  <td>{{p.estudianteId}}</td>
+                  <td>{{p.fechaInscripcion || '-'}}</td>
+                  <td><span class="badge badge--{{p.estado}}">{{p.estado}}</span></td>
+                  <td>{{p.promedioFinal ?? '-'}}</td>
+                  <td><span class="badge" [class]="p.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{p.isActive ? 'Activo' : 'Inactivo'}}</span></td>
+                  <td><div class="acts">
+                    <button class="ab ab--view" (click)="verDetalleProgRecupEst(p)" title="Ver detalle"><lucide-icon [img]="Eye" size="13" /></button>
+                    <button class="ab ab--edit" (click)="openEditProgramaRecupEst(p)" title="Editar"><lucide-icon [img]="Pencil" size="13" /></button>
+                    @if (p.isActive) {
+                      <button class="ab ab--del" (click)="softDeleteProgramaRecupEst(p)" title="Eliminar"><lucide-icon [img]="Trash2" size="13" /></button>
+                    } @else {
+                      <button class="ab ab--restore" (click)="restaurarProgramaRecupEst(p)" title="Restaurar"><lucide-icon [img]="RotateCcw" size="13" /></button>
+                    }
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+        @if (cargandoDetalle() && !detalleProgRecupEst()) {
+          <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando detalle...</p></div>
+        }
+        @if (detalleProgRecupEst()) {
+          <div class="detail-box">
+            <div class="detail-box__hd">
+              <h4>Detalle de Inscripción #{{detalleProgRecupEst()!.registro.id}}</h4>
+              <button class="btn btn--ghost btn--sm" (click)="detalleProgRecupEst.set(null)">Cerrar</button>
+            </div>
+            <div class="detail-box__grid">
+              <div class="detail-box__item"><span class="detail-box__lbl">Programa</span><span>{{detalleProgRecupEst()!.nombrePrograma}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Estudiante</span><span>{{detalleProgRecupEst()!.nombreEstudiante}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Fecha inscripción</span><span>{{detalleProgRecupEst()!.registro.fechaInscripcion || '—'}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Estado</span><span class="badge badge--{{detalleProgRecupEst()!.registro.estado}}">{{detalleProgRecupEst()!.registro.estado}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Promedio final</span><span>{{detalleProgRecupEst()!.registro.promedioFinal ?? '—'}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Registro</span><span class="badge" [class]="detalleProgRecupEst()!.registro.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{detalleProgRecupEst()!.registro.isActive ? 'Activo' : 'Inactivo'}}</span></div>
+              @if (detalleProgRecupEst()!.registro.observaciones) {
+                <div class="detail-box__item detail-box__item--full"><span class="detail-box__lbl">Observaciones</span><span>{{detalleProgRecupEst()!.registro.observaciones}}</span></div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== SECCIÓN EVENTOS INSTITUCIONALES ===== -->
+  @if (seccionActividad() === 'eventosInst') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenuActividad()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Actividades / Eventos Institucionales</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--red"><lucide-icon [img]="CalendarDays" /></div>
+            <div><h2 class="cs-title">Eventos Institucionales</h2><p class="cs-sub">Aniversarios, desfiles, olimpiadas y más</p></div>
+          </div>
+          <div class="cs-head__right">
+            <div class="filter-pills">
+              <button class="fpill" [class.fpill--on]="filtroEventoInst()==='todos'" (click)="filtroEventoInst.set('todos')">Todos <span class="count-chip">{{countEventoInst().todos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroEventoInst()==='activos'" (click)="filtroEventoInst.set('activos')">Activos <span class="count-chip">{{countEventoInst().activos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroEventoInst()==='inactivos'" (click)="filtroEventoInst.set('inactivos')">Inactivos <span class="count-chip">{{countEventoInst().inactivos}}</span></button>
+            </div>
+            <button class="btn btn--primary" (click)="openCreateEventoInst()"><lucide-icon [img]="Plus" size="14" />Nuevo Evento</button>
+          </div>
+        </div>
+        @if (loadingAct()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loadingAct() && eventosInst().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="CalendarDays" /><h3>Sin eventos</h3><p>Crea el primer evento institucional</p><button class="btn btn--primary" (click)="openCreateEventoInst()"><lucide-icon [img]="Plus" />Crear</button></div>
+        }
+        @if (!loadingAct() && eventosInst().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Nombre</th><th>Tipo</th><th>Fecha</th><th>Lugar</th><th>Cuota</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (e of eventosInst(); track e.id) {
+                <tr>
+                  <td class="td-id">{{e.id}}</td>
+                  <td class="td-trunc">{{e.nombre}}</td>
+                  <td><span class="badge badge--{{e.tipoEvento}}">{{e.tipoEvento}}</span></td>
+                  <td>{{e.fechaEvento}}</td>
+                  <td>{{e.lugar || '-'}}</td>
+                  <td>{{e.requiereCuota ? 'S/ ' + e.montoReferencial : 'No'}}</td>
+                  <td><span class="badge" [class]="e.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{e.isActive ? 'Activo' : 'Inactivo'}}</span></td>
+                  <td><div class="acts">
+                    <button class="ab ab--view" (click)="verDetalleEventoInst(e)" title="Ver detalle"><lucide-icon [img]="Eye" size="13" /></button>
+                    <button class="ab ab--edit" (click)="openEditEventoInst(e)" title="Editar"><lucide-icon [img]="Pencil" size="13" /></button>
+                    <button class="ab ab--toggle" (click)="toggleEventoInst(e)" [title]="e.isActive ? 'Desactivar' : 'Activar'"><lucide-icon [img]="e.isActive ? ToggleRight : ToggleLeft" size="13" /></button>
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+        @if (cargandoDetalle() && !detalleEventoInst()) {
+          <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando detalle...</p></div>
+        }
+        @if (detalleEventoInst()) {
+          <div class="detail-box">
+            <div class="detail-box__hd">
+              <h4>Detalle del Evento #{{detalleEventoInst()!.registro.id}}</h4>
+              <button class="btn btn--ghost btn--sm" (click)="detalleEventoInst.set(null)">Cerrar</button>
+            </div>
+            <div class="detail-box__grid">
+              <div class="detail-box__item"><span class="detail-box__lbl">Nombre</span><span>{{detalleEventoInst()!.registro.nombre}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Tipo</span><span class="badge badge--{{detalleEventoInst()!.registro.tipoEvento}}">{{detalleEventoInst()!.registro.tipoEvento}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Institución</span><span>{{detalleEventoInst()!.nombreInstitucion}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Responsable</span><span>{{detalleEventoInst()!.nombreResponsable}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Fecha</span><span>{{detalleEventoInst()!.registro.fechaEvento}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Lugar</span><span>{{detalleEventoInst()!.registro.lugar || '—'}}</span></div>
+              <div class="detail-box__item"><span class="detail-box__lbl">Requiere cuota</span><span>{{detalleEventoInst()!.registro.requiereCuota ? 'Sí' : 'No'}}</span></div>
+              @if (detalleEventoInst()!.registro.requiereCuota) {
+                <div class="detail-box__item"><span class="detail-box__lbl">Monto referencial</span><span>S/ {{detalleEventoInst()!.registro.montoReferencial}}</span></div>
+                <div class="detail-box__item"><span class="detail-box__lbl">Descripción cuota</span><span>{{detalleEventoInst()!.registro.descripcionCuota || '—'}}</span></div>
+              }
+              <div class="detail-box__item"><span class="detail-box__lbl">Estado</span><span class="badge" [class]="detalleEventoInst()!.registro.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{detalleEventoInst()!.registro.isActive ? 'Activo' : 'Inactivo'}}</span></div>
+              @if (detalleEventoInst()!.registro.descripcion) {
+                <div class="detail-box__item detail-box__item--full"><span class="detail-box__lbl">Descripción</span><span>{{detalleEventoInst()!.registro.descripcion}}</span></div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+  @if (seccionActividad() === 'participaciones') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenuActividad()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Actividades / Participaciones Estudiantiles</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--amber"><lucide-icon [img]="Award" /></div>
+            <div><h2 class="cs-title">Participaciones Estudiantiles</h2><p class="cs-sub">Participaciones en eventos externos</p></div>
+          </div>
+          <div class="cs-head__right">
+            <div class="filter-pills">
+              <button class="fpill" [class.fpill--on]="filtroParticipacion()==='todos'" (click)="filtroParticipacion.set('todos')">Todos <span class="count-chip">{{countParticipacion().todos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroParticipacion()==='activos'" (click)="filtroParticipacion.set('activos')">Activos <span class="count-chip">{{countParticipacion().activos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroParticipacion()==='inactivos'" (click)="filtroParticipacion.set('inactivos')">Inactivos <span class="count-chip">{{countParticipacion().inactivos}}</span></button>
+            </div>
+            <button class="btn btn--primary" (click)="openCreateParticipacion()"><lucide-icon [img]="Plus" size="14" />Nueva Participación</button>
+          </div>
+        </div>
+        @if (loadingAct()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loadingAct() && participaciones().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="Award" /><h3>Sin participaciones</h3><p>Registra la primera participación</p><button class="btn btn--primary" (click)="openCreateParticipacion()"><lucide-icon [img]="Plus" />Crear</button></div>
+        }
+        @if (!loadingAct() && participaciones().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Evento</th><th>Estudiante ID</th><th>Tipo</th><th>Fecha</th><th>Resultado</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (p of participaciones(); track p.id) {
+                <tr>
+                  <td class="td-id">{{p.id}}</td>
+                  <td class="td-trunc">{{p.nombreEvento}}</td>
+                  <td>{{p.estudianteId}}</td>
+                  <td>{{p.tipo || '-'}}</td>
+                  <td>{{p.fechaEvento || '-'}}</td>
+                  <td>{{p.resultado || '-'}}</td>
+                  <td><span class="badge" [class]="p.isActive ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{p.isActive ? 'Activo' : 'Inactivo'}}</span></td>
+                  <td><div class="acts">
+                    <button class="ab ab--edit" (click)="openEditParticipacion(p)" title="Editar"><lucide-icon [img]="Pencil" size="13" /></button>
+                    @if (p.isActive) {
+                      <button class="ab ab--del" (click)="softDeleteParticipacion(p)" title="Eliminar"><lucide-icon [img]="Trash2" size="13" /></button>
+                    } @else {
+                      <button class="ab ab--restore" (click)="restaurarParticipacion(p)" title="Restaurar"><lucide-icon [img]="RotateCcw" size="13" /></button>
+                    }
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+      </div>
+    </div>
+  }
+
+</div><!-- fin .ep -->
+
+<!-- ===== MODAL TALLER ===== -->
+@if (modalType() === 'taller') {
+  <div class="mbk" (click)="closeModal()">
+    <div class="mdl" (click)="$event.stopPropagation()">
+      <div class="mdl__hd">
+        <div class="mdl__hd-icon mdl__hd-icon--blue"><lucide-icon [img]="Dumbbell" /></div>
+        <h3>{{ modalMode() === 'create' ? 'Nuevo Taller' : 'Editar Taller' }}</h3>
+        <button class="mdl__x" (click)="closeModal()"><lucide-icon [img]="X" /></button>
+      </div>
+      <div class="mdl__bd">
+        <form [formGroup]="formTaller">
+          <div class="fg">
+            <label class="fl">Nombre *</label>
+            <input class="fi" type="text" formControlName="nombre" placeholder="Nombre del taller">
+            @if (formTaller.get('nombre')?.touched || formTaller.get('nombre')?.dirty) {
+              @if (formTaller.get('nombre')?.errors?.['required']) {
+                <span class="fe">El nombre es requerido</span>
+              } @else if (formTaller.get('nombre')?.errors?.['soloTexto']) {
+                <span class="fe">Solo se permiten letras, espacios y guiones</span>
+              }
+            }
+          </div>
+          <div class="fg">
+            <label class="fl">Descripción</label>
+            <textarea class="fi" formControlName="descripcion" placeholder="Descripción (máx. 100 caracteres)" rows="2"></textarea>
+            @if ((formTaller.get('descripcion')?.touched || formTaller.get('descripcion')?.dirty) && formTaller.get('descripcion')?.errors?.['maxlength']) {
+              <span class="fe">Máximo 100 caracteres</span>
+            }
+          </div>
+          <div class="fg">
+            <label class="fl">Categoría *</label>
+            <select class="fi" formControlName="categoria">
+              @for (c of categoriasTaller; track c) { <option [value]="c">{{c}}</option> }
+            </select>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Día de la semana</label>
+              <select class="fi" formControlName="diaSemana">
+                <option value="">— Seleccionar —</option>
+                @for (d of diasSemana; track d) { <option [value]="d">{{d}}</option> }
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">Cupo máximo</label>
+              <input class="fi" type="number" formControlName="cupoMaximo" placeholder="Ej: 20">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Hora inicio</label>
+              <input class="fi" type="time" formControlName="horaInicio">
+            </div>
+            <div class="fg">
+              <label class="fl">Hora fin</label>
+              <input class="fi" type="time" formControlName="horaFin">
+              @if (formTaller.errors?.['horaFinMenor'] && (formTaller.get('horaFin')?.touched || formTaller.get('horaFin')?.dirty)) {
+                <span class="fe">La hora de fin debe ser mayor a la hora de inicio</span>
+              }
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Profesor responsable (ID)</label>
+              <input class="fi" type="number" formControlName="profesorResponsableId" placeholder="ID del profesor">
+            </div>
+            <div class="fg">
+              <label class="fl">Aula (ID)</label>
+              <input class="fi" type="number" formControlName="aulaId" placeholder="ID del aula">
+            </div>
+          </div>
+          <div class="fchk">
+            <input type="checkbox" id="reqAuth" formControlName="requiereAutorizacion">
+            <label for="reqAuth">Requiere autorización</label>
+          </div>
+        </form>
+      </div>
+      <div class="mdl__ft">
+        <button class="btn btn--ghost" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn--primary" (click)="saveTaller()" [disabled]="modalSaving()">
+          @if (modalSaving()) { <lucide-icon [img]="RefreshCw" class="spin" /> Guardando... }
+          @else { <lucide-icon [img]="Save" /> Guardar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== MODAL TALLER ESTUDIANTE ===== -->
+@if (modalType() === 'tallerEst') {
+  <div class="mbk" (click)="closeModal()">
+    <div class="mdl" (click)="$event.stopPropagation()">
+      <div class="mdl__hd">
+        <div class="mdl__hd-icon mdl__hd-icon--indigo"><lucide-icon [img]="UserPlus" /></div>
+        <h3>{{ modalMode() === 'create' ? 'Nueva Inscripción a Taller' : 'Editar Inscripción' }}</h3>
+        <button class="mdl__x" (click)="closeModal()"><lucide-icon [img]="X" /></button>
+      </div>
+      <div class="mdl__bd">
+        <form [formGroup]="formTallerEst">
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Taller (ID) *</label>
+              <input class="fi" type="number" formControlName="tallerId" placeholder="ID del taller">
+              @if (hintTallerEstTaller()) { <span class="fhint">{{hintTallerEstTaller()}}</span> }
+              @if ((formTallerEst.get('tallerId')?.touched || formTallerEst.get('tallerId')?.dirty) && formTallerEst.get('tallerId')?.errors?.['required']) {
+                <span class="fe">El ID del taller es requerido</span>
+              }
+            </div>
+            <div class="fg">
+              <label class="fl">Estudiante (ID) *</label>
+              <input class="fi" type="number" formControlName="estudianteId" placeholder="ID del estudiante">
+              @if (hintTallerEstEst()) { <span class="fhint">{{hintTallerEstEst()}}</span> }
+              @if ((formTallerEst.get('estudianteId')?.touched || formTallerEst.get('estudianteId')?.dirty) && formTallerEst.get('estudianteId')?.errors?.['required']) {
+                <span class="fe">El ID del estudiante es requerido</span>
+              }
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Fecha de inscripción</label>
+              <input class="fi" type="date" formControlName="fechaInscripcion">
+              @if ((formTallerEst.get('fechaInscripcion')?.touched || formTallerEst.get('fechaInscripcion')?.dirty) && formTallerEst.get('fechaInscripcion')?.errors?.['fechaPasada']) {
+                <span class="fe">La fecha no puede ser anterior a hoy</span>
+              }
+            </div>
+            <div class="fg">
+              <label class="fl">Estado</label>
+              <select class="fi" formControlName="estado">
+                @for (e of estadosTallerEst; track e) { <option [value]="e">{{e}}</option> }
+              </select>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Observaciones</label>
+            <textarea class="fi" formControlName="observaciones" placeholder="Observaciones (máx. 100 caracteres)" rows="2"></textarea>
+            @if ((formTallerEst.get('observaciones')?.touched || formTallerEst.get('observaciones')?.dirty) && formTallerEst.get('observaciones')?.errors?.['maxlength']) {
+              <span class="fe">Máximo 100 caracteres</span>
+            }
+          </div>
+        </form>
+      </div>
+      <div class="mdl__ft">
+        <button class="btn btn--ghost" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn--primary" (click)="saveTallerEst()" [disabled]="modalSaving()">
+          @if (modalSaving()) { <lucide-icon [img]="RefreshCw" class="spin" /> Guardando... }
+          @else { <lucide-icon [img]="Save" /> Guardar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== MODAL PROGRAMA RECUPERACIÓN ===== -->
+@if (modalType() === 'programaRecup') {
+  <div class="mbk" (click)="closeModal()">
+    <div class="mdl" (click)="$event.stopPropagation()">
+      <div class="mdl__hd">
+        <div class="mdl__hd-icon mdl__hd-icon--purple"><lucide-icon [img]="BookMarked" /></div>
+        <h3>{{ modalMode() === 'create' ? 'Nuevo Programa de Recuperación' : 'Editar Programa' }}</h3>
+        <button class="mdl__x" (click)="closeModal()"><lucide-icon [img]="X" /></button>
+      </div>
+      <div class="mdl__bd">
+        <form [formGroup]="formProgramaRecup">
+          <div class="fg">
+            <label class="fl">Nombre *</label>
+            <input class="fi" type="text" formControlName="nombre" placeholder="Nombre del programa">
+            @if (formProgramaRecup.get('nombre')?.touched || formProgramaRecup.get('nombre')?.dirty) {
+              @if (formProgramaRecup.get('nombre')?.errors?.['required']) {
+                <span class="fe">El nombre es requerido</span>
+              } @else if (formProgramaRecup.get('nombre')?.errors?.['soloTexto']) {
+                <span class="fe">Solo se permiten letras, espacios y guiones</span>
+              }
+            }
+          </div>
+          <div class="fg">
+            <label class="fl">Descripción</label>
+            <textarea class="fi" formControlName="descripcion" placeholder="Descripción (máx. 100 caracteres)" rows="2"></textarea>
+            @if ((formProgramaRecup.get('descripcion')?.touched || formProgramaRecup.get('descripcion')?.dirty) && formProgramaRecup.get('descripcion')?.errors?.['maxlength']) {
+              <span class="fe">Máximo 100 caracteres</span>
+            }
+          </div>
+          <div class="fg">
+            <label class="fl">Tipo *</label>
+            <select class="fi" formControlName="tipo">
+              @for (t of tiposProgRecup; track t) { <option [value]="t">{{t}}</option> }
+            </select>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Fecha inicio *</label>
+              <input class="fi" type="date" formControlName="fechaInicio">
+              @if ((formProgramaRecup.get('fechaInicio')?.touched || formProgramaRecup.get('fechaInicio')?.dirty) && formProgramaRecup.get('fechaInicio')?.errors?.['required']) {
+                <span class="fe">La fecha de inicio es requerida</span>
+              }
+            </div>
+            <div class="fg">
+              <label class="fl">Fecha fin *</label>
+              <input class="fi" type="date" formControlName="fechaFin">
+              @if (formProgramaRecup.get('fechaFin')?.touched || formProgramaRecup.get('fechaFin')?.dirty) {
+                @if (formProgramaRecup.get('fechaFin')?.errors?.['required']) {
+                  <span class="fe">La fecha de fin es requerida</span>
+                }
+              }
+              @if (formProgramaRecup.errors?.['fechaFinAnterior'] && (formProgramaRecup.get('fechaFin')?.touched || formProgramaRecup.get('fechaFin')?.dirty)) {
+                <span class="fe">La fecha de fin debe ser igual o posterior a la fecha de inicio</span>
+              }
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Hora inicio</label>
+              <input class="fi" type="time" formControlName="horaInicio">
+            </div>
+            <div class="fg">
+              <label class="fl">Hora fin</label>
+              <input class="fi" type="time" formControlName="horaFin">
+              @if (formProgramaRecup.errors?.['horaFinMenor'] && (formProgramaRecup.get('horaFin')?.touched || formProgramaRecup.get('horaFin')?.dirty)) {
+                <span class="fe">La hora de fin debe ser mayor a la hora de inicio</span>
+              }
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Materia (ID)</label>
+              <input class="fi" type="number" formControlName="materiaId" placeholder="ID de la materia">
+            </div>
+            <div class="fg">
+              <label class="fl">Capacidad máx.</label>
+              <input class="fi" type="number" formControlName="capacidadMax" placeholder="Ej: 30">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Profesor (ID)</label>
+              <input class="fi" type="number" formControlName="profesorId" placeholder="ID del profesor">
+            </div>
+            <div class="fg">
+              <label class="fl">Aula (ID)</label>
+              <input class="fi" type="number" formControlName="aulaId" placeholder="ID del aula">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="mdl__ft">
+        <button class="btn btn--ghost" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn--primary" (click)="saveProgramaRecup()" [disabled]="modalSaving()">
+          @if (modalSaving()) { <lucide-icon [img]="RefreshCw" class="spin" /> Guardando... }
+          @else { <lucide-icon [img]="Save" /> Guardar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== MODAL PROGRAMA RECUPERACIÓN ESTUDIANTE ===== -->
+@if (modalType() === 'programaRecupEst') {
+  <div class="mbk" (click)="closeModal()">
+    <div class="mdl" (click)="$event.stopPropagation()">
+      <div class="mdl__hd">
+        <div class="mdl__hd-icon mdl__hd-icon--green"><lucide-icon [img]="UserPlus" /></div>
+        <h3>{{ modalMode() === 'create' ? 'Nueva Inscripción a Programa' : 'Editar Inscripción' }}</h3>
+        <button class="mdl__x" (click)="closeModal()"><lucide-icon [img]="X" /></button>
+      </div>
+      <div class="mdl__bd">
+        <form [formGroup]="formProgramaRecupEst">
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Programa (ID) *</label>
+              <input class="fi" type="number" formControlName="programaId" placeholder="ID del programa">
+              @if (hintProgRecupEstProg()) { <span class="fhint">{{hintProgRecupEstProg()}}</span> }
+              @if ((formProgramaRecupEst.get('programaId')?.touched || formProgramaRecupEst.get('programaId')?.dirty) && formProgramaRecupEst.get('programaId')?.errors?.['required']) {
+                <span class="fe">El ID del programa es requerido</span>
+              }
+            </div>
+            <div class="fg">
+              <label class="fl">Estudiante (ID) *</label>
+              <input class="fi" type="number" formControlName="estudianteId" placeholder="ID del estudiante">
+              @if (hintProgRecupEstEst()) { <span class="fhint">{{hintProgRecupEstEst()}}</span> }
+              @if ((formProgramaRecupEst.get('estudianteId')?.touched || formProgramaRecupEst.get('estudianteId')?.dirty) && formProgramaRecupEst.get('estudianteId')?.errors?.['required']) {
+                <span class="fe">El ID del estudiante es requerido</span>
+              }
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Fecha de inscripción</label>
+              <input class="fi" type="date" formControlName="fechaInscripcion">
+              @if ((formProgramaRecupEst.get('fechaInscripcion')?.touched || formProgramaRecupEst.get('fechaInscripcion')?.dirty) && formProgramaRecupEst.get('fechaInscripcion')?.errors?.['fechaPasada']) {
+                <span class="fe">La fecha no puede ser anterior a hoy</span>
+              }
+            </div>
+            <div class="fg">
+              <label class="fl">Estado</label>
+              <select class="fi" formControlName="estado">
+                @for (e of estadosProgRecupEst; track e) { <option [value]="e">{{e}}</option> }
+              </select>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Promedio final (0–20)</label>
+            <input class="fi" type="number" formControlName="promedioFinal" placeholder="Ej: 14.5" min="0" max="20" step="0.01">
+            @if (formProgramaRecupEst.get('promedioFinal')?.touched || formProgramaRecupEst.get('promedioFinal')?.dirty) {
+              @if (formProgramaRecupEst.get('promedioFinal')?.errors?.['min']) {
+                <span class="fe">El promedio no puede ser menor a 0</span>
+              } @else if (formProgramaRecupEst.get('promedioFinal')?.errors?.['max']) {
+                <span class="fe">El promedio no puede ser mayor a 20</span>
+              }
+            }
+          </div>
+          <div class="fg">
+            <label class="fl">Observaciones</label>
+            <textarea class="fi" formControlName="observaciones" placeholder="Observaciones (máx. 100 caracteres)" rows="2"></textarea>
+            @if ((formProgramaRecupEst.get('observaciones')?.touched || formProgramaRecupEst.get('observaciones')?.dirty) && formProgramaRecupEst.get('observaciones')?.errors?.['maxlength']) {
+              <span class="fe">Máximo 100 caracteres</span>
+            }
+          </div>
+        </form>
+      </div>
+      <div class="mdl__ft">
+        <button class="btn btn--ghost" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn--primary" (click)="saveProgramaRecupEst()" [disabled]="modalSaving()">
+          @if (modalSaving()) { <lucide-icon [img]="RefreshCw" class="spin" /> Guardando... }
+          @else { <lucide-icon [img]="Save" /> Guardar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== MODAL EVENTO INSTITUCIONAL ===== -->
+@if (modalType() === 'eventoInst') {
+  <div class="mbk" (click)="closeModal()">
+    <div class="mdl" (click)="$event.stopPropagation()">
+      <div class="mdl__hd">
+        <div class="mdl__hd-icon mdl__hd-icon--red"><lucide-icon [img]="CalendarDays" /></div>
+        <h3>{{ modalMode() === 'create' ? 'Nuevo Evento Institucional' : 'Editar Evento' }}</h3>
+        <button class="mdl__x" (click)="closeModal()"><lucide-icon [img]="X" /></button>
+      </div>
+      <div class="mdl__bd">
+        <form [formGroup]="formEventoInst">
+          <div class="fg">
+            <label class="fl">Nombre *</label>
+            <input class="fi" type="text" formControlName="nombre" placeholder="Nombre del evento">
+            @if (formEventoInst.get('nombre')?.touched || formEventoInst.get('nombre')?.dirty) {
+              @if (formEventoInst.get('nombre')?.errors?.['required']) {
+                <span class="fe">El nombre es requerido</span>
+              } @else if (formEventoInst.get('nombre')?.errors?.['soloTexto']) {
+                <span class="fe">Solo se permiten letras, espacios y guiones</span>
+              }
+            }
+          </div>
+          <div class="fg">
+            <label class="fl">Descripción</label>
+            <textarea class="fi" formControlName="descripcion" placeholder="Descripción (máx. 100 caracteres)" rows="2"></textarea>
+            @if ((formEventoInst.get('descripcion')?.touched || formEventoInst.get('descripcion')?.dirty) && formEventoInst.get('descripcion')?.errors?.['maxlength']) {
+              <span class="fe">Máximo 100 caracteres</span>
+            }
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Tipo de evento *</label>
+              <select class="fi" formControlName="tipoEvento">
+                @for (t of tiposEventoInst; track t) { <option [value]="t">{{t}}</option> }
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">Fecha del evento *</label>
+              <input class="fi" type="date" formControlName="fechaEvento">
+              @if (formEventoInst.get('fechaEvento')?.touched || formEventoInst.get('fechaEvento')?.dirty) {
+                @if (formEventoInst.get('fechaEvento')?.errors?.['required']) {
+                  <span class="fe">La fecha del evento es requerida</span>
+                } @else if (formEventoInst.get('fechaEvento')?.errors?.['fechaPasada']) {
+                  <span class="fe">La fecha no puede ser anterior a hoy</span>
+                }
+              }
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Lugar</label>
+              <input class="fi" type="text" formControlName="lugar" placeholder="Lugar del evento">
+              @if ((formEventoInst.get('lugar')?.touched || formEventoInst.get('lugar')?.dirty) && formEventoInst.get('lugar')?.errors?.['soloTexto']) {
+                <span class="fe">Solo se permiten letras, espacios y guiones</span>
+              }
+            </div>
+            <div class="fg">
+              <label class="fl">Responsable (ID)</label>
+              <input class="fi" type="number" formControlName="responsableId" placeholder="ID del responsable">
+            </div>
+          </div>
+          <div class="fchk">
+            <input type="checkbox" id="reqCuota" formControlName="requiereCuota">
+            <label for="reqCuota">Requiere cuota</label>
+          </div>
+          @if (formEventoInst.get('requiereCuota')?.value) {
+            <div class="frow">
+              <div class="fg">
+                <label class="fl">Monto referencial (S/)</label>
+                <input class="fi" type="number" formControlName="montoReferencial" placeholder="Ej: 50.00" step="0.01">
+                @if ((formEventoInst.get('montoReferencial')?.touched || formEventoInst.get('montoReferencial')?.dirty) && formEventoInst.get('montoReferencial')?.errors?.['cerosIzquierda']) {
+                  <span class="fe">El monto no puede tener ceros a la izquierda (ej: 007)</span>
+                }
+              </div>
+              <div class="fg">
+                <label class="fl">Descripción de cuota</label>
+                <input class="fi" type="text" formControlName="descripcionCuota" placeholder="Descripción">
+              </div>
+            </div>
+          }
+        </form>
+      </div>
+      <div class="mdl__ft">
+        <button class="btn btn--ghost" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn--primary" (click)="saveEventoInst()" [disabled]="modalSaving()">
+          @if (modalSaving()) { <lucide-icon [img]="RefreshCw" class="spin" /> Guardando... }
+          @else { <lucide-icon [img]="Save" /> Guardar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== MODAL PARTICIPACIÓN ESTUDIANTIL ===== -->
+@if (modalType() === 'participacion') {
+  <div class="mbk" (click)="closeModal()">
+    <div class="mdl" (click)="$event.stopPropagation()">
+      <div class="mdl__hd">
+        <div class="mdl__hd-icon mdl__hd-icon--amber"><lucide-icon [img]="Award" /></div>
+        <h3>{{ modalMode() === 'create' ? 'Nueva Participación' : 'Editar Participación' }}</h3>
+        <button class="mdl__x" (click)="closeModal()"><lucide-icon [img]="X" /></button>
+      </div>
+      <div class="mdl__bd">
+        <form [formGroup]="formParticipacion">
+          <div class="fg">
+            <label class="fl">Nombre del evento *</label>
+            <input class="fi" type="text" formControlName="nombreEvento" placeholder="Nombre del evento externo">
+            @if (formParticipacion.get('nombreEvento')?.touched || formParticipacion.get('nombreEvento')?.dirty) {
+              @if (formParticipacion.get('nombreEvento')?.errors?.['required']) {
+                <span class="fe">El nombre del evento es requerido</span>
+              } @else if (formParticipacion.get('nombreEvento')?.errors?.['soloTexto']) {
+                <span class="fe">Solo se permiten letras, espacios y guiones</span>
+              }
+            }
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Estudiante (ID) *</label>
+              <input class="fi" type="number" formControlName="estudianteId" placeholder="ID del estudiante">
+              @if (hintParticipacionEst()) { <span class="fhint">{{hintParticipacionEst()}}</span> }
+              @if ((formParticipacion.get('estudianteId')?.touched || formParticipacion.get('estudianteId')?.dirty) && formParticipacion.get('estudianteId')?.errors?.['required']) {
+                <span class="fe">El ID del estudiante es requerido</span>
+              }
+            </div>
+            <div class="fg">
+              <label class="fl">Profesor responsable (ID)</label>
+              <input class="fi" type="number" formControlName="profesorResponsableId" placeholder="ID del profesor">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Tipo</label>
+              <input class="fi" type="text" formControlName="tipo" placeholder="Ej: concurso, olimpiada">
+              @if ((formParticipacion.get('tipo')?.touched || formParticipacion.get('tipo')?.dirty) && formParticipacion.get('tipo')?.errors?.['soloTexto']) {
+                <span class="fe">Solo se permiten letras, espacios y guiones</span>
+              }
+            </div>
+            <div class="fg">
+              <label class="fl">Organizador</label>
+              <input class="fi" type="text" formControlName="organizador" placeholder="Entidad organizadora">
+              @if ((formParticipacion.get('organizador')?.touched || formParticipacion.get('organizador')?.dirty) && formParticipacion.get('organizador')?.errors?.['soloTexto']) {
+                <span class="fe">Solo se permiten letras, espacios y guiones</span>
+              }
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Lugar</label>
+              <input class="fi" type="text" formControlName="lugar" placeholder="Lugar del evento">
+              @if ((formParticipacion.get('lugar')?.touched || formParticipacion.get('lugar')?.dirty) && formParticipacion.get('lugar')?.errors?.['soloTexto']) {
+                <span class="fe">Solo se permiten letras, espacios y guiones</span>
+              }
+            </div>
+            <div class="fg">
+              <label class="fl">Fecha del evento</label>
+              <input class="fi" type="date" formControlName="fechaEvento">
+              @if ((formParticipacion.get('fechaEvento')?.touched || formParticipacion.get('fechaEvento')?.dirty) && formParticipacion.get('fechaEvento')?.errors?.['fechaPasada']) {
+                <span class="fe">La fecha no puede ser anterior a hoy</span>
+              }
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Resultado</label>
+            <input class="fi" type="text" formControlName="resultado" placeholder="Ej: primer lugar, participante">
+            @if ((formParticipacion.get('resultado')?.touched || formParticipacion.get('resultado')?.dirty) && formParticipacion.get('resultado')?.errors?.['soloTexto']) {
+              <span class="fe">Solo se permiten letras, espacios y guiones</span>
+            }
+          </div>
+          <div class="fg">
+            <label class="fl">Observaciones</label>
+            <textarea class="fi" formControlName="observaciones" placeholder="Observaciones (máx. 100 caracteres)" rows="2"></textarea>
+            @if ((formParticipacion.get('observaciones')?.touched || formParticipacion.get('observaciones')?.dirty) && formParticipacion.get('observaciones')?.errors?.['maxlength']) {
+              <span class="fe">Máximo 100 caracteres</span>
+            }
+          </div>
+        </form>
+      </div>
+      <div class="mdl__ft">
+        <button class="btn btn--ghost" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn--primary" (click)="saveParticipacion()" [disabled]="modalSaving()">
+          @if (modalSaving()) { <lucide-icon [img]="RefreshCw" class="spin" /> Guardando... }
+          @else { <lucide-icon [img]="Save" /> Guardar }
+        </button>
+      </div>
+    </div>
+  </div>
+}

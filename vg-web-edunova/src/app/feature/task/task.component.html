@@ -1,0 +1,180 @@
+<div class="task-module">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-area">
+        <div class="logo-icon">E</div>
+        <div class="logo-text">
+          <h1>EDUNOVA</h1>
+          <span>Gestión Académica</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="user-selector" (click)="toggleUserSelector()">
+        <div class="user-avatar" [class.teacher]="role === 'teacher'" [class.student]="role === 'student'">
+          {{ role === 'teacher' ? 'P' : 'E' }}
+        </div>
+        <div class="user-info">
+          <div class="user-name">{{ currentUserName }}</div>
+          <div class="user-role">{{ currentUserRole }}</div>
+        </div>
+        <lucide-icon [img]="icons.ChevronDown" [size]="16"></lucide-icon>
+      </div>
+      <div class="dropdown" *ngIf="showUserSelector">
+        <div class="dropdown-header">Seleccionar usuario</div>
+        <div class="dropdown-item" *ngFor="let user of getUsersList()" (click)="selectUser(user)">
+          <div class="item-avatar" [class.teacher]="user.role === 'teacher'" [class.student]="user.role === 'student'">
+            {{ user.role === 'teacher' ? 'P' : 'E' }}
+          </div>
+          <div class="item-info">
+            <div class="item-name">{{ user.nombre }}</div>
+            <div class="item-type">{{ user.roleName }} <span *ngIf="user.specialty">- {{ user.specialty }}</span><span *ngIf="user.studentCode">- Cod: {{ user.studentCode }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-bar" *ngIf="role === 'teacher'">
+    <div class="filter-group">
+      <div class="filter-item" [class.active]="filtroEstado === 'todos'" (click)="setFiltroEstado('todos')">
+        <lucide-icon [img]="icons.LayoutGrid" [size]="16"></lucide-icon>
+        <span>Todas</span>
+        <span class="filter-count">{{ getTotalTareas() }}</span>
+      </div>
+      <div class="filter-item" [class.active]="filtroEstado === 'borrador'" (click)="setFiltroEstado('borrador')">
+        <lucide-icon [img]="icons.FileText" [size]="16"></lucide-icon>
+        <span>Borrador</span>
+        <span class="filter-count">{{ getBorradorCount() }}</span>
+      </div>
+      <div class="filter-item" [class.active]="filtroEstado === 'publicada'" (click)="setFiltroEstado('publicada')">
+        <lucide-icon [img]="icons.CheckCircle" [size]="16"></lucide-icon>
+        <span>Publicadas</span>
+        <span class="filter-count">{{ getPublicadaCount() }}</span>
+      </div>
+      <div class="filter-item" [class.active]="filtroEstado === 'cerrada'" (click)="setFiltroEstado('cerrada')">
+        <lucide-icon [img]="icons.Lock" [size]="16"></lucide-icon>
+        <span>Cerradas</span>
+        <span class="filter-count">{{ getCerradaCount() }}</span>
+      </div>
+      <div class="filter-item danger" [class.active]="filtroEstado === 'eliminada'" (click)="setFiltroEstado('eliminada')">
+        <lucide-icon [img]="icons.Trash2" [size]="16"></lucide-icon>
+        <span>Eliminadas</span>
+        <span class="filter-count">{{ getEliminadaCount() }}</span>
+      </div>
+    </div>
+    
+    <div class="filter-actions">
+      <div class="search-box">
+        <lucide-icon [img]="icons.Search" [size]="16"></lucide-icon>
+        <input type="text" placeholder="Buscar tarea..." [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()">
+      </div>
+      <div class="materia-selector">
+        <lucide-icon [img]="icons.BookOpen" [size]="16"></lucide-icon>
+        <select [(ngModel)]="filtroMateriaId" (ngModelChange)="onMateriaChange()">
+          <option [ngValue]="0">Todas las materias</option>
+          <option *ngFor="let m of materiasDelProfesor" [ngValue]="m.id">{{m.nombre}}</option>
+        </select>
+      </div>
+      <button class="btn-clear" (click)="limpiarFiltros()">
+        <lucide-icon [img]="icons.X" [size]="14"></lucide-icon> Limpiar
+      </button>
+    </div>
+  </div>
+
+  <div class="filters-bar student-filters" *ngIf="role === 'student' && studentDashboard">
+    <div class="filter-group student-status-group">
+      <div class="filter-item" [class.active]="filtroEstadoEstudiante === 'todos'" (click)="setFiltroEstadoEstudiante('todos')">
+        <lucide-icon [img]="icons.LayoutGrid" [size]="16"></lucide-icon>
+        <span>Todas</span>
+        <span class="filter-count">{{ getTotalTareasEstudiante() }}</span>
+      </div>
+      <div class="filter-item" [class.active]="filtroEstadoEstudiante === 'pendientes'" (click)="setFiltroEstadoEstudiante('pendientes')">
+        <lucide-icon [img]="icons.Bell" [size]="16"></lucide-icon>
+        <span>Pendientes</span>
+        <span class="filter-count">{{ getPendientesEstudiante() }}</span>
+      </div>
+      <div class="filter-item" [class.active]="filtroEstadoEstudiante === 'entregadas'" (click)="setFiltroEstadoEstudiante('entregadas')">
+        <lucide-icon [img]="icons.Send" [size]="16"></lucide-icon>
+        <span>Por calificar</span>
+        <span class="filter-count">{{ getEntregadasEstudiante() }}</span>
+      </div>
+      <div class="filter-item" [class.active]="filtroEstadoEstudiante === 'calificadas'" (click)="setFiltroEstadoEstudiante('calificadas')">
+        <lucide-icon [img]="icons.CheckCircle" [size]="16"></lucide-icon>
+        <span>Calificadas</span>
+        <span class="filter-count">{{ getCalificadasEstudiante() }}</span>
+      </div>
+    </div>
+    <div class="materia-selector">
+      <lucide-icon [img]="icons.BookOpen" [size]="16"></lucide-icon>
+      <select (change)="onFiltroMateriaEstudianteChange($event)">
+        <option [value]="0" [selected]="filtroMateriaEstudianteId === 0">Todas las materias</option>
+        <option *ngFor="let m of studentDashboard.materias" [value]="m.materiaId" [selected]="filtroMateriaEstudianteId === m.materiaId">{{m.materiaNombre}}</option>
+      </select>
+    </div>
+    <button class="btn-clear" (click)="limpiarFiltrosEstudiante()">
+      <lucide-icon [img]="icons.X" [size]="14"></lucide-icon> Limpiar
+    </button>
+  </div>
+
+  <div class="toolbar" *ngIf="role === 'teacher'">
+    <button class="btn-new" (click)="crearTarea()">
+      <lucide-icon [img]="icons.Plus" [size]="16"></lucide-icon> Nueva Tarea
+    </button>
+  </div>
+
+  <div class="table-wrap" *ngIf="role === 'teacher'">
+    <table class="table">
+      <thead>
+        <tr><th>Título</th><th>Materia</th><th>Fecha límite</th><th>Estado</th><th>Acciones</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of tareasFiltradas">
+          <td class="title-cell">{{t.title}}<span *ngIf="t.isDeleted" class="badge-deleted">Eliminada</span></td>
+          <td><span class="badge" [style.background]="getMateriaColor(t.classId)">{{getMateriaNombre(t.classId)}}</span></td>
+          <td>{{t.dueDate | date:'dd/MM/yyyy'}}</td>
+          <td><span class="status" [class.draft]="t.status==='draft'" [class.published]="t.status==='published'" [class.closed]="t.status==='closed'">{{ t.status | taskStatusLabel }}</span></td>
+          <td class="actions-cell">
+            <div class="actions-group">
+              <button *ngIf="!t.isDeleted && t.status==='published'" class="btn-grade" (click)="calificarTarea(t)">Calificar</button>
+              <button *ngIf="!t.isDeleted" class="btn-icon" (click)="editarTarea(t)"><lucide-icon [img]="icons.Edit" [size]="16"></lucide-icon></button>
+              <button *ngIf="!t.isDeleted && t.status==='draft'" class="btn-icon" (click)="publicarTarea(t)"><lucide-icon [img]="icons.Send" [size]="16"></lucide-icon></button>
+              <button *ngIf="!t.isDeleted && t.status==='published'" class="btn-icon" (click)="cerrarTarea(t)"><lucide-icon [img]="icons.Lock" [size]="16"></lucide-icon></button>
+              <button *ngIf="!t.isDeleted" class="btn-icon" (click)="eliminarTarea(t)"><lucide-icon [img]="icons.Trash2" [size]="16"></lucide-icon></button>
+              <button *ngIf="t.isDeleted" class="btn-icon btn-restore" (click)="restaurarTarea(t)">Restaurar</button>
+              <button class="btn-icon" (click)="verDetalle(t)"><lucide-icon [img]="icons.Eye" [size]="16"></lucide-icon></button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="tareasFiltradas.length === 0"><td colspan="5" class="empty">No hay tareas</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="student-view" *ngIf="role === 'student' && studentDashboard">
+    <div class="section" *ngFor="let materia of materiasEstudianteFiltradas">
+      <div class="section-header">
+        <div class="color-dot" [style.background]="getMateriaColorById(materia.materiaId)"></div>
+        <h3>{{materia.materiaNombre}}</h3>
+        <span class="task-count">{{materia.tareas.length}} tareas</span>
+      </div>
+      <div class="task-cards">
+        <div class="task-card" *ngFor="let tarea of materia.tareas">
+          <div class="task-info">
+            <div class="task-title">{{tarea.titulo}}</div>
+            <div class="task-description">{{tarea.descripcion}}</div>
+            <div class="task-meta"><span class="due-date">📅 {{tarea.fechaEntrega | date:'dd/MM/yyyy HH:mm'}}</span></div>
+            <div class="task-status" *ngIf="tarea.entregada && tarea.nota !== null"><span class="badge-submitted">{{ tarea.estado | taskStatusLabel:tarea.nota }}</span><span class="grade">Nota: {{tarea.nota}}/20</span></div>
+            <div class="task-status" *ngIf="tarea.entregada && tarea.nota === null"><span class="badge-submitted">Entregado</span></div>
+            <div class="task-status" *ngIf="!tarea.entregada"><span class="badge-pending">Pendiente</span></div>
+          </div>
+          <div class="card-actions"><button class="btn-view" (click)="verDetalleTarea(tarea, materia.materiaNombre)">Ver detalles</button></div>
+        </div>
+        <div *ngIf="materia.tareas.length === 0" class="empty-all">No hay tareas</div>
+      </div>
+    </div>
+    <div *ngIf="materiasEstudianteFiltradas.length === 0" class="empty-all">No hay materias con el filtro seleccionado</div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading"><div class="spinner"></div><p>Cargando...</p></div>
+</div>

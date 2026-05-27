@@ -1,0 +1,569 @@
+<div class="banco-container">
+  <!-- Header -->
+  <div class="banco-header">
+    <div class="header-left">
+      <div class="icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+        </svg>
+      </div>
+      <div class="header-title">
+        <h1>Banco de Preguntas</h1>
+        <p>GESTIÓN DE PREGUNTAS Y EVALUACIONES</p>
+      </div>
+    </div>
+    <button class="btn-nueva-pregunta" (click)="nuevaPregunta()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      NUEVA PREGUNTA
+    </button>
+  </div>
+
+  <!-- Filtros y búsqueda -->
+  <div class="filtros-container">
+    <!-- Búsqueda -->
+    <div class="busqueda-box">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      </svg>
+      <input 
+        type="text" 
+        placeholder="Buscar preguntas por texto, tema o materia..."
+        [(ngModel)]="busqueda"
+        (ngModelChange)="paginaActual.set(1)">
+    </div>
+
+    <!-- Filtros de dificultad -->
+    <div class="filtros-group">
+      <button 
+        class="filtro-btn"
+        [class.active]="filtroDificultad() === 'TODAS'"
+        (click)="cambiarDificultad('TODAS')">
+        TODAS
+      </button>
+      <button 
+        class="filtro-btn facil"
+        [class.active]="filtroDificultad() === 'FACIL'"
+        (click)="cambiarDificultad('FACIL')">
+        FÁCIL
+      </button>
+      <button 
+        class="filtro-btn medio"
+        [class.active]="filtroDificultad() === 'MEDIO'"
+        (click)="cambiarDificultad('MEDIO')">
+        MEDIO
+      </button>
+      <button 
+        class="filtro-btn dificil"
+        [class.active]="filtroDificultad() === 'DIFICIL'"
+        (click)="cambiarDificultad('DIFICIL')">
+        DIFÍCIL
+      </button>
+    </div>
+
+    <!-- Contador de resultados -->
+    <div class="resultados-info">
+      <span class="resultados-count">{{ preguntasFiltradas.length }}</span> preguntas encontradas
+    </div>
+  </div>
+
+  <!-- Grid de preguntas -->
+  <div class="preguntas-grid">
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando preguntas...</p>
+      </div>
+    } @else if (preguntasPaginadas.length === 0) {
+      <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+        </svg>
+        <p>No se encontraron preguntas</p>
+        <button class="btn-crear-primera" (click)="nuevaPregunta()">Crear primera pregunta</button>
+      </div>
+    } @else {
+      @for (pregunta of preguntasPaginadas; track pregunta.id) {
+        <div class="pregunta-card" (click)="verDetalles(pregunta)">
+          <!-- Header de la tarjeta -->
+          <div class="card-header">
+            <span class="card-tipo">{{ getTipoIcon(pregunta.tipo) }}</span>
+            <span class="card-dificultad" [ngClass]="getDificultadClass(pregunta.dificultad)">
+              {{ pregunta.dificultad }}
+            </span>
+          </div>
+
+          <!-- Pregunta -->
+          <div class="card-pregunta">
+            {{ pregunta.enunciado }}
+          </div>
+
+          <!-- Metadata -->
+          <div class="card-metadata">
+            @if (pregunta.nombreMateria) {
+              <span class="metadata-item materia">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9" />
+                </svg>
+                {{ pregunta.nombreMateria }}
+              </span>
+            }
+            @if (pregunta.tags) {
+              <span class="metadata-item tema">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
+                </svg>
+                {{ pregunta.tags }}
+              </span>
+            }
+          </div>
+
+          <!-- Footer con acciones -->
+          <div class="card-footer">
+            @if (pregunta.nombreProfesor) {
+              <span class="card-profesor">{{ pregunta.nombreProfesor }}</span>
+            }
+            <div class="card-acciones">
+              <button class="btn-accion" (click)="editarPregunta(pregunta); $event.stopPropagation()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                </svg>
+              </button>
+              <button class="btn-accion eliminar" (click)="eliminarPregunta(pregunta); $event.stopPropagation()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Paginación -->
+  @if (preguntasFiltradas.length > itemsPorPagina) {
+    <div class="paginacion-container">
+      <div class="paginacion-info">
+        Mostrando {{ (paginaActual() - 1) * itemsPorPagina + 1 }} - {{ Math.min(paginaActual() * itemsPorPagina, preguntasFiltradas.length) }} de {{ preguntasFiltradas.length }}
+      </div>
+      <div class="paginacion-controles">
+        <button 
+          class="btn-paginacion"
+          [disabled]="paginaActual() === 1"
+          (click)="paginaAnterior()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+        
+        @for (pagina of paginasArray; track pagina) {
+          <button 
+            class="btn-numero-pagina"
+            [class.active]="paginaActual() === pagina"
+            (click)="cambiarPagina(pagina)">
+            {{ pagina }}
+          </button>
+        }
+        
+        <button 
+          class="btn-paginacion"
+          [disabled]="paginaActual() === totalPaginas"
+          (click)="paginaSiguiente()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de Detalles -->
+  @if (mostrarModal() && preguntaSeleccionada()) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Detalles de la Pregunta</h2>
+          <button class="btn-cerrar" (click)="cerrarModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="detalle-item">
+            <label>Pregunta:</label>
+            <p>{{ preguntaSeleccionada()!.enunciado }}</p>
+          </div>
+          <div class="detalle-row">
+            <div class="detalle-item">
+              <label>Tipo:</label>
+              <p>{{ preguntaSeleccionada()!.tipo }}</p>
+            </div>
+            <div class="detalle-item">
+              <label>Dificultad:</label>
+              <p [ngClass]="getDificultadClass(preguntaSeleccionada()!.dificultad)">
+                {{ preguntaSeleccionada()!.dificultad }}
+              </p>
+            </div>
+          </div>
+          @if (preguntaSeleccionada()!.opciones) {
+            <div class="detalle-item">
+              <label>Opciones:</label>
+              <p>{{ preguntaSeleccionada()!.opciones }}</p>
+            </div>
+          }
+          <div class="detalle-item">
+            <label>Respuesta Correcta:</label>
+            <p class="respuesta-correcta">{{ preguntaSeleccionada()!.respuestaClave }}</p>
+          </div>
+          @if (preguntaSeleccionada()!.explicacion) {
+            <div class="detalle-item">
+              <label>Explicación:</label>
+              <p>{{ preguntaSeleccionada()!.explicacion }}</p>
+            </div>
+          }
+          @if (preguntaSeleccionada()!.tags) {
+            <div class="detalle-item">
+              <label>Etiquetas:</label>
+              <p>{{ preguntaSeleccionada()!.tags }}</p>
+            </div>
+          }
+          <div class="detalle-row">
+            @if (preguntaSeleccionada()!.nombreMateria) {
+              <div class="detalle-item">
+                <label>Materia:</label>
+                <p>{{ preguntaSeleccionada()!.nombreMateria }}</p>
+              </div>
+            }
+            @if (preguntaSeleccionada()!.nombreProfesor) {
+              <div class="detalle-item">
+                <label>Profesor:</label>
+                <p>{{ preguntaSeleccionada()!.nombreProfesor }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de Formulario -->
+  @if (mostrarModalForm()) {
+    <div class="modal-overlay" (click)="cerrarModalForm()">
+      <div class="modal-content modal-form" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ modoEdicion() ? 'Editar Pregunta' : 'Nueva Pregunta' }}</h2>
+          <button class="btn-cerrar" (click)="cerrarModalForm()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form [formGroup]="preguntaForm" (ngSubmit)="guardarPregunta()">
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Materia *</label>
+                <select 
+                  formControlName="materiaId"
+                  [class.invalid]="isFieldInvalid('materiaId')">
+                  <option [value]="null" disabled>Seleccione una materia</option>
+                  @if (loadingMaterias()) {
+                    <option disabled>Cargando materias...</option>
+                  } @else if (materias().length === 0) {
+                    <option disabled>No hay materias disponibles</option>
+                  } @else {
+                    @for (materia of materias(); track materia.id) {
+                      <option [value]="materia.id">{{ materia.nombre }}</option>
+                    }
+                  }
+                </select>
+                @if (isFieldInvalid('materiaId')) {
+                  <span class="error-message">{{ getFieldError('materiaId') }}</span>
+                }
+              </div>
+              <div class="form-group">
+                <label>Profesor *</label>
+                <select 
+                  formControlName="profesorId"
+                  [class.invalid]="isFieldInvalid('profesorId')">
+                  <option [value]="null" disabled>Seleccione un profesor</option>
+                  @if (loadingProfesores()) {
+                    <option disabled>Cargando profesores...</option>
+                  } @else if (profesores().length === 0) {
+                    <option disabled>No hay profesores disponibles</option>
+                  } @else {
+                    @for (profesor of profesores(); track profesor.id) {
+                      <option [value]="profesor.id">{{ profesor.nombreCompleto }}</option>
+                    }
+                  }
+                </select>
+                @if (isFieldInvalid('profesorId')) {
+                  <span class="error-message">{{ getFieldError('profesorId') }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Pregunta * <small>(10-1000 caracteres)</small></label>
+              <textarea 
+                formControlName="enunciado"
+                rows="3"
+                maxlength="1000"
+                [placeholder]="getEnunciadoPlaceholder(preguntaForm.get('tipo')?.value || 'MULTIPLE_CHOICE')"
+                [class.invalid]="isFieldInvalid('enunciado')"></textarea>
+              @if (isFieldInvalid('enunciado')) {
+                <span class="error-message">{{ getFieldError('enunciado') }}</span>
+              }
+              <div class="character-count">
+                {{ preguntaForm.get('enunciado')?.value?.length || 0 }}/1000 caracteres
+              </div>
+              @if (preguntaForm.get('tipo')?.value) {
+                <small class="help-text">
+                  💡 {{ getTipoInfo(preguntaForm.get('tipo')?.value) }}
+                </small>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Tipo de Pregunta *</label>
+                <select 
+                  formControlName="tipo"
+                  (change)="onTipoChange($event)"
+                  [class.invalid]="isFieldInvalid('tipo')">
+                  @for (tipo of tiposPregunta; track tipo.value) {
+                    <option [value]="tipo.value">{{ tipo.label }}</option>
+                  }
+                </select>
+                @if (isFieldInvalid('tipo')) {
+                  <span class="error-message">{{ getFieldError('tipo') }}</span>
+                }
+                <small class="debug-info">Tipo actual: {{ tipoActual }}</small>
+              </div>
+              <div class="form-group">
+                <label>Dificultad *</label>
+                <select 
+                  formControlName="dificultad"
+                  [class.invalid]="isFieldInvalid('dificultad')">
+                  @for (dif of dificultades; track dif) {
+                    <option [value]="dif">{{ dif }}</option>
+                  }
+                </select>
+                @if (isFieldInvalid('dificultad')) {
+                  <span class="error-message">{{ getFieldError('dificultad') }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Opciones dinámicas SOLO para preguntas de opción múltiple -->
+            @if (preguntaForm.get('tipo')?.value === 'MULTIPLE_CHOICE') {
+              <div class="form-group">
+                <label>Opciones * <small>(mínimo 2, máximo 8)</small></label>
+                <div class="opciones-dinamicas">
+                  @for (opcion of opciones(); track $index) {
+                    <div class="opcion-item">
+                      <span class="opcion-letra">{{ String.fromCharCode(65 + $index) }})</span>
+                      <input 
+                        type="text" 
+                        [value]="opcion"
+                        maxlength="200"
+                        (input)="actualizarOpcion($index, $any($event.target).value)"
+                        placeholder="Escribe la opción {{ $index + 1 }}"
+                        [class.invalid]="opcion.trim() === '' && opciones().length > 2">
+                      <button 
+                        type="button" 
+                        class="btn-eliminar-opcion"
+                        [disabled]="opciones().length <= 2"
+                        (click)="eliminarOpcion($index)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  }
+                  <button 
+                    type="button" 
+                    class="btn-agregar-opcion"
+                    [disabled]="opciones().length >= 8"
+                    (click)="agregarOpcion()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Agregar Opción
+                  </button>
+                </div>
+              </div>
+            }
+            <div class="form-group respuesta-correcta-dinamica">
+              <label>
+                Respuesta Correcta *
+                @switch (preguntaForm.get('tipo')?.value) {
+                  @case ('MULTIPLE_CHOICE') {
+                    <small class="tipo-info">→ Seleccione la letra de la opción correcta</small>
+                  }
+                  @case ('TRUE_FALSE') {
+                    <small class="tipo-info">→ Seleccione Verdadero o Falso</small>
+                  }
+                  @case ('SHORT_ANSWER') {
+                    <small class="tipo-info">→ Escriba la respuesta esperada</small>
+                  }
+                  @case ('ESSAY') {
+                    <small class="tipo-info">→ Escriba los criterios de evaluación</small>
+                  }
+                }
+              </label>
+              
+              <!-- CAMPO DINÁMICO SEGÚN EL TIPO -->
+              @switch (preguntaForm.get('tipo')?.value) {
+                
+                <!-- OPCIÓN MÚLTIPLE: Solo letras A, B, C, D... -->
+                @case ('MULTIPLE_CHOICE') {
+                  <div class="respuesta-multiple-container">
+                    <div class="input-con-botones">
+                      <input 
+                        type="text" 
+                        formControlName="respuestaClave"
+                        maxlength="1"
+                        placeholder="A"
+                        class="input-letra"
+                        (input)="onRespuestaMultipleInput($event)"
+                        [class.invalid]="isFieldInvalid('respuestaClave')">
+                      <div class="opciones-disponibles">
+                        <span class="help-text">Haga clic: </span>
+                        @for (opcion of opciones(); track $index) {
+                          @if (opcion.trim() !== '') {
+                            <button 
+                              type="button"
+                              class="opcion-disponible"
+                              [class.selected]="preguntaForm.get('respuestaClave')?.value?.toUpperCase() === String.fromCharCode(65 + $index)"
+                              (click)="seleccionarRespuesta(String.fromCharCode(65 + $index))"
+                              title="Opción {{ String.fromCharCode(65 + $index) }}: {{ opcion }}">
+                              {{ String.fromCharCode(65 + $index) }}
+                            </button>
+                          }
+                        }
+                        @if (noHayOpciones) {
+                          <span class="no-opciones">⚠️ Agregue opciones primero</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+                
+                <!-- VERDADERO/FALSO: Dropdown con opciones fijas -->
+                @case ('TRUE_FALSE') {
+                  <div class="respuesta-verdadero-falso">
+                    <select 
+                      formControlName="respuestaClave"
+                      [class.invalid]="isFieldInvalid('respuestaClave')"
+                      class="select-verdadero-falso">
+                      <option value="">-- Seleccione la respuesta correcta --</option>
+                      <option value="Verdadero">✅ Verdadero</option>
+                      <option value="Falso">❌ Falso</option>
+                    </select>
+                  </div>
+                }
+                
+                <!-- RESPUESTA CORTA: Input de texto libre -->
+                @case ('SHORT_ANSWER') {
+                  <div class="respuesta-corta">
+                    <input 
+                      type="text" 
+                      formControlName="respuestaClave"
+                      maxlength="200"
+                      placeholder="Escriba la respuesta esperada..."
+                      [class.invalid]="isFieldInvalid('respuestaClave')"
+                      class="input-respuesta-corta">
+                    <div class="character-count">
+                      {{ preguntaForm.get('respuestaClave')?.value?.length || 0 }}/200 caracteres
+                    </div>
+                    <small class="help-text">
+                      💡 Ejemplo: "H2O", "París", "Mitocondria"
+                    </small>
+                  </div>
+                }
+                
+                <!-- ENSAYO: Textarea para criterios -->
+                @case ('ESSAY') {
+                  <div class="respuesta-ensayo">
+                    <textarea 
+                      formControlName="respuestaClave"
+                      rows="4"
+                      maxlength="1000"
+                      placeholder="Escriba los criterios de evaluación para esta pregunta de ensayo..."
+                      [class.invalid]="isFieldInvalid('respuestaClave')"
+                      class="textarea-ensayo"></textarea>
+                    <div class="character-count">
+                      {{ preguntaForm.get('respuestaClave')?.value?.length || 0 }}/1000 caracteres
+                    </div>
+                    <small class="help-text">
+                      💡 Incluya: puntos clave, estructura esperada, criterios de calificación
+                    </small>
+                  </div>
+                }
+                
+                <!-- FALLBACK: Si no hay tipo seleccionado -->
+                @default {
+                  <div class="sin-tipo-seleccionado">
+                    <p>👆 Seleccione un tipo de pregunta primero</p>
+                  </div>
+                }
+              }
+              
+              @if (isFieldInvalid('respuestaClave')) {
+                <span class="error-message">{{ getFieldError('respuestaClave') }}</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>Explicación <small>(opcional, máximo 2000 caracteres)</small></label>
+              <textarea 
+                formControlName="explicacion"
+                rows="3"
+                maxlength="2000"
+                placeholder="Explicación de la respuesta correcta o conceptos relacionados..."
+                [class.invalid]="isFieldInvalid('explicacion')"></textarea>
+              @if (isFieldInvalid('explicacion')) {
+                <span class="error-message">{{ getFieldError('explicacion') }}</span>
+              }
+              <div class="character-count">
+                {{ preguntaForm.get('explicacion')?.value?.length || 0 }}/2000 caracteres
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Etiquetas <small>(opcional, separadas por comas, máximo 10)</small></label>
+              <input 
+                type="text" 
+                formControlName="tags"
+                maxlength="255"
+                placeholder="Ej: Álgebra, Geometría, Básico"
+                [class.invalid]="isFieldInvalid('tags')">
+              @if (isFieldInvalid('tags')) {
+                <span class="error-message">{{ getFieldError('tags') }}</span>
+              }
+              <small class="help-text">Las etiquetas ayudan a organizar y buscar preguntas</small>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-cancelar" (click)="cerrarModalForm()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-guardar" [disabled]="preguntaForm.invalid">
+              @if (modoEdicion()) {
+                Actualizar Pregunta
+              } @else {
+                Crear Pregunta
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,755 @@
+<div class="ep">
+
+  <!-- ===== MENÚ ===== -->
+  @if (seccionActiva() === 'menu') {
+    <div class="sec-menu">
+      <div class="sec-grid">
+        <div class="sec-card sec-card--blue" (click)="irSeccion('programas')">
+          <div class="sec-card__icon"><lucide-icon [img]="Layers" /></div>
+          <div class="sec-card__body"><h3>Programas de Tutoría</h3><p>Gestión de programas grupales e individuales</p></div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+        <div class="sec-card sec-card--indigo" (click)="irSeccion('tutoresGrado')">
+          <div class="sec-card__icon"><lucide-icon [img]="GraduationCap" /></div>
+          <div class="sec-card__body"><h3>Tutores de Grado</h3><p>Asignación de tutores por grado</p></div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+        <div class="sec-card sec-card--purple" (click)="irSeccion('tutoresEstudiante')">
+          <div class="sec-card__icon"><lucide-icon [img]="UserCheck" /></div>
+          <div class="sec-card__body"><h3>Tutores de Estudiante</h3><p>Tutorías individuales por estudiante</p></div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+        <div class="sec-card sec-card--green" (click)="irSeccion('sesiones')">
+          <div class="sec-card__icon"><lucide-icon [img]="ClipboardList" /></div>
+          <div class="sec-card__body"><h3>Sesiones de Tutoría</h3><p>Registro de sesiones realizadas</p></div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+        <div class="sec-card sec-card--red" (click)="irSeccion('incidencias')">
+          <div class="sec-card__icon"><lucide-icon [img]="ShieldAlert" /></div>
+          <div class="sec-card__body"><h3>Incidencias</h3><p>{{incidencias().length}} registros</p></div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+        <div class="sec-card sec-card--amber" (click)="irSeccion('seguimientoIncidencias')">
+          <div class="sec-card__icon"><lucide-icon [img]="RefreshCw" /></div>
+          <div class="sec-card__body"><h3>Seguimiento de Incidencias</h3><p>Acciones y resultados</p></div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+        <div class="sec-card sec-card--teal" (click)="irSeccion('participantesEventos')">
+          <div class="sec-card__icon"><lucide-icon [img]="UserPlus" /></div>
+          <div class="sec-card__body"><h3>Participantes de Eventos</h3><p>Confirmaciones y asistencia</p></div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+        <div class="sec-card sec-card--slate" (click)="irSeccion('documentos')">
+          <div class="sec-card__icon"><lucide-icon [img]="FileText" /></div>
+          <div class="sec-card__body"><h3>Documentos de Tutoría</h3><p>{{documentos().length}} archivos</p></div>
+          <div class="sec-card__arrow"><lucide-icon [img]="ChevronRight" /></div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ===== PROGRAMAS ===== -->
+  @if (seccionActiva() === 'programas') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenu()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Tutorías / Programas de Tutoría</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--blue"><lucide-icon [img]="Layers" /></div>
+            <div><h2 class="cs-title">Programas de Tutoría</h2><p class="cs-sub">Gestión de programas grupales e individuales</p></div>
+          </div>
+          <div class="cs-head__right">
+            <div class="filter-pills">
+              <button class="fpill" [class.fpill--on]="filtroProg()==='todos'" (click)="filtroProg.set('todos')">Todos <span class="count-chip">{{countProg().todos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroProg()==='activos'" (click)="filtroProg.set('activos')">Activos <span class="count-chip">{{countProg().activos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroProg()==='inactivos'" (click)="filtroProg.set('inactivos')">Inactivos <span class="count-chip">{{countProg().inactivos}}</span></button>
+            </div>
+            <button class="btn btn--primary" (click)="openCreatePrograma()"><lucide-icon [img]="Plus" size="14" />Nuevo Programa</button>
+          </div>
+        </div>
+        @if (loading()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loading() && programas().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="Layers" /><h3>Sin programas</h3><p>Crea el primer programa de tutoría</p><button class="btn btn--primary" (click)="openCreatePrograma()"><lucide-icon [img]="Plus" size="14" />Crear</button></div>
+        }
+        @if (!loading() && programas().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Nombre</th><th>Tipo</th><th>Institución</th><th>Año Acad.</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (p of programas(); track p.id) {
+                <tr>
+                  <td class="td-id">{{p.id}}</td>
+                  <td class="td-trunc">{{p.nombre}}</td>
+                  <td><span class="badge">{{p.tipo}}</span></td>
+                  <td>{{p.institucionId}}</td>
+                  <td>{{p.anoAcademicoId}}</td>
+                  <td><span class="badge" [class]="p.activo ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{p.activo ? 'Activo' : 'Inactivo'}}</span></td>
+                  <td><div class="acts">
+                    <button class="ab ab--edit" (click)="openEditPrograma(p)" title="Editar"><lucide-icon [img]="Pencil" size="13" /></button>
+                    <button class="ab ab--toggle" (click)="togglePrograma(p)" [title]="p.activo ? 'Desactivar' : 'Activar'"><lucide-icon [img]="p.activo ? ToggleRight : ToggleLeft" size="13" /></button>
+                    <button class="ab ab--del" (click)="deletePrograma(p)" title="Desactivar/Eliminar"><lucide-icon [img]="Trash2" size="13" /></button>
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== TUTORES GRADO ===== -->
+  @if (seccionActiva() === 'tutoresGrado') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenu()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Tutorías / Tutores de Grado</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--indigo"><lucide-icon [img]="GraduationCap" /></div>
+            <div><h2 class="cs-title">Tutores de Grado</h2><p class="cs-sub">Asignación de tutores por grado</p></div>
+          </div>
+          <div class="cs-head__right">
+            <div class="filter-pills">
+              <button class="fpill" [class.fpill--on]="filtroGrado()==='todos'" (click)="filtroGrado.set('todos')">Todos <span class="count-chip">{{countGrado().todos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroGrado()==='activos'" (click)="filtroGrado.set('activos')">Activos <span class="count-chip">{{countGrado().activos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroGrado()==='inactivos'" (click)="filtroGrado.set('inactivos')">Inactivos <span class="count-chip">{{countGrado().inactivos}}</span></button>
+            </div>
+            <button class="btn btn--primary" (click)="openCreateTutorGrado()"><lucide-icon [img]="Plus" size="14" />Nuevo Tutor</button>
+          </div>
+        </div>
+        @if (loading()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loading() && tutoresGrado().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="GraduationCap" /><h3>Sin tutores de grado</h3><p>Asigna el primer tutor</p><button class="btn btn--primary" (click)="openCreateTutorGrado()"><lucide-icon [img]="Plus" size="14" />Crear</button></div>
+        }
+        @if (!loading() && tutoresGrado().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Programa</th><th>Profesor</th><th>Grado</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (t of tutoresGrado(); track t.id) {
+                <tr>
+                  <td class="td-id">{{t.id}}</td>
+                  <td class="td-trunc">{{getProgramaNombre(t.programaTutoriaId)}}</td>
+                  <td class="td-trunc">{{getProfesorNombre(t.profesorId)}}</td>
+                  <td>{{getGradoNombre(t.gradoId)}}</td>
+                  <td>{{formatFecha(t.fechaInicio)}}</td>
+                  <td>{{formatFecha(t.fechaFin)}}</td>
+                  <td><span class="badge" [class]="t.activo ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{t.activo ? 'Activo' : 'Inactivo'}}</span></td>
+                  <td><div class="acts">
+                    <button class="ab ab--edit" (click)="openEditTutorGrado(t)" title="Editar"><lucide-icon [img]="Pencil" size="13" /></button>
+                    <button class="ab ab--toggle" (click)="toggleTutorGrado(t)" [title]="t.activo ? 'Desactivar' : 'Activar'"><lucide-icon [img]="t.activo ? ToggleRight : ToggleLeft" size="13" /></button>
+                    <button class="ab ab--del" (click)="deleteTutorGrado(t)" title="Desactivar/Eliminar"><lucide-icon [img]="Trash2" size="13" /></button>
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== TUTORES ESTUDIANTE ===== -->
+  @if (seccionActiva() === 'tutoresEstudiante') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenu()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Tutorías / Tutores de Estudiante</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--purple"><lucide-icon [img]="UserCheck" /></div>
+            <div><h2 class="cs-title">Tutores de Estudiante</h2><p class="cs-sub">Tutorías individuales por estudiante</p></div>
+          </div>
+          <div class="cs-head__right">
+            <div class="filter-pills">
+              <button class="fpill" [class.fpill--on]="filtroEst()==='todos'" (click)="filtroEst.set('todos')">Todos <span class="count-chip">{{countEst().todos}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroEst()==='activa'" (click)="filtroEst.set('activa')">Activas <span class="count-chip">{{countEst().activa}}</span></button>
+              <button class="fpill" [class.fpill--on]="filtroEst()==='inactiva'" (click)="filtroEst.set('inactiva')">Inactivas <span class="count-chip">{{countEst().inactiva}}</span></button>
+            </div>
+            <button class="btn btn--primary" (click)="openCreateTutorEstudiante()"><lucide-icon [img]="Plus" size="14" />Nueva Tutoría</button>
+          </div>
+        </div>
+        @if (loading()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loading() && tutoresEstudiante().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="UserCheck" /><h3>Sin tutorías</h3><p>Crea la primera tutoría</p><button class="btn btn--primary" (click)="openCreateTutorEstudiante()"><lucide-icon [img]="Plus" size="14" />Crear</button></div>
+        }
+        @if (!loading() && tutoresEstudiante().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Estudiante</th><th>Profesor</th><th>Tipo</th><th>Motivo</th><th>Inicio</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (t of tutoresEstudiante(); track t.id) {
+                <tr>
+                  <td class="td-id">{{t.id}}</td>
+                  <td class="td-trunc">{{getEstudianteNombre(t.estudianteId)}}</td>
+                  <td class="td-trunc">{{getProfesorNombre(t.profesorId)}}</td>
+                  <td><span class="badge">{{t.tipo}}</span></td>
+                  <td class="td-trunc">{{t.motivo || '-'}}</td>
+                  <td>{{formatFecha(t.fechaInicio)}}</td>
+                  <td><span class="badge" [class]="t.estado === 'activa' ? 'badge--activo' : 'badge--inactivo'"><span class="bdot"></span>{{t.estado}}</span></td>
+                  <td><div class="acts">
+                    <button class="ab ab--edit" (click)="openEditTutorEstudiante(t)" title="Editar"><lucide-icon [img]="Pencil" size="13" /></button>
+                    <button class="ab ab--del" (click)="deleteTutorEstudiante(t)" title="Desactivar/Eliminar"><lucide-icon [img]="Trash2" size="13" /></button>
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== SESIONES ===== -->
+  @if (seccionActiva() === 'sesiones') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenu()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Tutorías / Sesiones de Tutoría</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--green"><lucide-icon [img]="ClipboardList" /></div>
+            <div><h2 class="cs-title">Sesiones de Tutoría</h2><p class="cs-sub">{{sesiones().length}} sesiones registradas</p></div>
+          </div>
+          <div class="cs-head__right">
+            <button class="btn btn--primary" (click)="openCreateSesion()"><lucide-icon [img]="Plus" size="14" />Nueva Sesión</button>
+          </div>
+        </div>
+        @if (loading()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loading() && sesiones().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="ClipboardList" /><h3>Sin sesiones</h3><p>Registra la primera sesión</p><button class="btn btn--primary" (click)="openCreateSesion()"><lucide-icon [img]="Plus" size="14" />Crear</button></div>
+        }
+        @if (!loading() && sesiones().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Fecha</th><th>Horario</th><th>Tipo</th><th>Modalidad</th><th>Temas</th><th>Próxima</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (s of sesiones(); track s.id) {
+                <tr>
+                  <td class="td-id">{{s.id}}</td>
+                  <td>{{formatFecha(s.fechaSesion)}}</td>
+                  <td><span class="tchip"><lucide-icon [img]="Clock" />{{formatHora(s.horaInicio)}}@if(s.horaFin){ - {{formatHora(s.horaFin)}}}</span></td>
+                  <td><span class="badge">{{s.tipo}}</span></td>
+                  <td>{{s.modalidad}}</td>
+                  <td class="td-trunc">{{s.temasTratados || '-'}}</td>
+                  <td>{{formatFecha(s.proximaSesion)}}</td>
+                  <td><div class="acts">
+                    <button class="ab ab--edit" (click)="openEditSesion(s)" title="Editar"><lucide-icon [img]="Pencil" size="13" /></button>
+                    <button class="ab ab--del" (click)="deleteSesion(s.id)" title="Eliminar"><lucide-icon [img]="Trash2" size="13" /></button>
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== INCIDENCIAS (solo lectura) ===== -->
+  @if (seccionActiva() === 'incidencias') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenu()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Tutorías / Incidencias</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--red"><lucide-icon [img]="ShieldAlert" /></div>
+            <div><h2 class="cs-title">Incidencias</h2><p class="cs-sub">{{incidencias().length}} registros</p></div>
+          </div>
+        </div>
+        @if (loading()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loading() && incidencias().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="ShieldAlert" /><h3>Sin incidencias</h3><p>No hay incidencias registradas</p></div>
+        }
+        @if (!loading() && incidencias().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Estudiante ID</th><th>Tipo</th><th>Severidad</th><th>Título</th><th>Fecha</th><th>Estado</th></tr></thead>
+            <tbody>
+              @for (i of incidencias(); track i.id) {
+                <tr>
+                  <td class="td-id">{{i.id}}</td>
+                  <td>{{i.estudianteId}}</td>
+                  <td><span class="badge">{{i.tipo}}</span></td>
+                  <td><span class="badge badge--{{i.severidad}}">{{i.severidad}}</span></td>
+                  <td class="td-trunc">{{i.titulo}}</td>
+                  <td>{{formatFecha(i.fechaIncidencia)}}</td>
+                  <td><span class="badge">{{i.estado}}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== SEGUIMIENTO INCIDENCIAS (solo lectura) ===== -->
+  @if (seccionActiva() === 'seguimientoIncidencias') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenu()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Tutorías / Seguimiento de Incidencias</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--amber"><lucide-icon [img]="RefreshCw" /></div>
+            <div><h2 class="cs-title">Seguimiento de Incidencias</h2><p class="cs-sub">{{seguimientos().length}} registros</p></div>
+          </div>
+        </div>
+        @if (loading()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loading() && seguimientos().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="RefreshCw" /><h3>Sin seguimientos</h3><p>No hay seguimientos registrados</p></div>
+        }
+        @if (!loading() && seguimientos().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Incidencia ID</th><th>Usuario ID</th><th>Acción</th><th>Resultado</th><th>Fecha</th></tr></thead>
+            <tbody>
+              @for (s of seguimientos(); track s.id) {
+                <tr>
+                  <td class="td-id">{{s.id}}</td>
+                  <td>{{s.incidenciaId}}</td>
+                  <td>{{s.usuarioId}}</td>
+                  <td class="td-trunc">{{s.accion}}</td>
+                  <td class="td-trunc">{{s.resultado || '-'}}</td>
+                  <td>{{formatFecha(s.fechaAccion)}}</td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== PARTICIPANTES EVENTOS (solo lectura) ===== -->
+  @if (seccionActiva() === 'participantesEventos') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenu()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Tutorías / Participantes de Eventos</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--teal"><lucide-icon [img]="UserPlus" /></div>
+            <div><h2 class="cs-title">Participantes de Eventos</h2><p class="cs-sub">{{participantes().length}} registros</p></div>
+          </div>
+        </div>
+        @if (loading()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loading() && participantes().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="UserPlus" /><h3>Sin participantes</h3><p>No hay participantes registrados</p></div>
+        }
+        @if (!loading() && participantes().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Evento ID</th><th>Usuario ID</th><th>Confirmación</th><th>Asistió</th><th>Notas</th><th>Fecha</th></tr></thead>
+            <tbody>
+              @for (p of participantes(); track p.eventoId + '-' + p.usuarioId) {
+                <tr>
+                  <td>{{p.eventoId}}</td>
+                  <td>{{p.usuarioId}}</td>
+                  <td><span class="badge">{{p.confirmacion}}</span></td>
+                  <td>{{p.asistio === null ? '-' : p.asistio ? 'Sí' : 'No'}}</td>
+                  <td class="td-trunc">{{p.notas || '-'}}</td>
+                  <td>{{formatFecha(p.createdAt)}}</td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== DOCUMENTOS ===== -->
+  @if (seccionActiva() === 'documentos') {
+    <div class="sec-view">
+      <div class="topbar">
+        <button class="btn btn--ghost btn--sm" (click)="volverMenu()"><lucide-icon [img]="ArrowLeft" size="13" />Volver</button>
+        <span class="breadcrumb">Tutorías / Documentos de Tutoría</span>
+      </div>
+      <div class="card-section">
+        <div class="cs-head">
+          <div class="cs-head__left">
+            <div class="cs-icon cs-icon--slate"><lucide-icon [img]="FileText" /></div>
+            <div><h2 class="cs-title">Documentos de Tutoría</h2><p class="cs-sub">{{documentos().length}} archivos</p></div>
+          </div>
+        </div>
+        @if (loading()) { <div class="sbox sbox--load"><lucide-icon [img]="RefreshCw" class="spin" /><p>Cargando...</p></div> }
+        @if (!loading() && documentos().length === 0) {
+          <div class="cs-empty"><lucide-icon [img]="FileText" /><h3>Sin documentos</h3><p>No hay documentos registrados</p></div>
+        }
+        @if (!loading() && documentos().length > 0) {
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th class="td-id">ID</th><th>Archivo</th><th>Entidad</th><th>Extensión</th><th>Tamaño</th><th>Descripción</th><th>Fecha</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (d of documentos(); track d.id) {
+                <tr>
+                  <td class="td-id">{{d.id}}</td>
+                  <td><a class="ev-link" [href]="d.urlArchivo" target="_blank">{{d.nombreArchivo}}</a></td>
+                  <td>{{d.entidadTipo}}</td>
+                  <td><span class="badge">{{d.extension}}</span></td>
+                  <td>{{formatTamano(d.tamanoKb)}}</td>
+                  <td class="td-trunc">{{d.descripcion || '-'}}</td>
+                  <td>{{formatFecha(d.createdAt)}}</td>
+                  <td><div class="acts">
+                    <button class="ab ab--del" (click)="deleteDocumento(d.id)" title="Eliminar"><lucide-icon [img]="Trash2" size="13" /></button>
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table></div>
+        }
+      </div>
+    </div>
+  }
+
+</div><!-- fin .ep -->
+
+<!-- ===== MODAL PROGRAMA ===== -->
+@if (modalType() === 'programa') {
+  <div class="mbk" (click)="closeModal()">
+    <div class="mdl" (click)="$event.stopPropagation()">
+      <div class="mdl__hd">
+        <div class="mdl__hd-icon mdl__hd-icon--blue"><lucide-icon [img]="Layers" /></div>
+        <h3>{{ modalMode() === 'create' ? 'Nuevo Programa' : 'Editar Programa' }}</h3>
+        <button class="mdl__x" (click)="closeModal()"><lucide-icon [img]="X" /></button>
+      </div>
+      <div class="mdl__bd">
+        <form [formGroup]="formPrograma">
+          <div class="fg">
+            <label class="fl">Nombre *</label>
+            <input class="fi" type="text" formControlName="nombre" placeholder="Nombre del programa">
+            @if (hasError(formPrograma, 'nombre')) { <span class="fe">Requerido</span> }
+          </div>
+          <div class="fg">
+            <label class="fl">Tipo *</label>
+            <select class="fi" formControlName="tipo">
+              @for (t of tiposProg; track t) { <option [value]="t">{{t}}</option> }
+            </select>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Institución (ID) *</label>
+              <input class="fi" type="number" formControlName="institucionId" placeholder="ID">
+              @if (hasError(formPrograma, 'institucionId')) { <span class="fe">Requerido</span> }
+            </div>
+            <div class="fg">
+              <label class="fl">Año Académico (ID) *</label>
+              @if (hasAnos()) {
+                <select class="fi" formControlName="anoAcademicoId">
+                  <option [value]="null">Seleccionar año</option>
+                  @for (a of anosAcademicos(); track a.id) {
+                    <option [value]="a.id">{{a.nombre}}</option>
+                  }
+                </select>
+              } @else {
+                <input class="fi" type="number" formControlName="anoAcademicoId" placeholder="ID del año académico">
+              }
+              @if (hasError(formPrograma, 'anoAcademicoId')) { <span class="fe">Requerido</span> }
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Descripción</label>
+            <textarea class="fi" formControlName="descripcion" rows="2" placeholder="Descripción del programa"></textarea>
+          </div>
+          <div class="fg">
+            <label class="fl">Objetivos</label>
+            <textarea class="fi" formControlName="objetivos" rows="2" placeholder="Objetivos del programa"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="mdl__ft">
+        <button class="btn btn--ghost" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn--primary" (click)="savePrograma()" [disabled]="modalSaving()">
+          @if (modalSaving()) { <lucide-icon [img]="RefreshCw" size="14" class="spin" /> Guardando... }
+          @else { <lucide-icon [img]="Save" size="14" /> Guardar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== MODAL TUTOR GRADO ===== -->
+@if (modalType() === 'tutorGrado') {
+  <div class="mbk" (click)="closeModal()">
+    <div class="mdl" (click)="$event.stopPropagation()">
+      <div class="mdl__hd">
+        <div class="mdl__hd-icon mdl__hd-icon--indigo"><lucide-icon [img]="GraduationCap" /></div>
+        <h3>{{ modalMode() === 'create' ? 'Nuevo Tutor de Grado' : 'Editar Tutor de Grado' }}</h3>
+        <button class="mdl__x" (click)="closeModal()"><lucide-icon [img]="X" /></button>
+      </div>
+      <div class="mdl__bd">
+        <form [formGroup]="formTutorGrado">
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Programa *</label>
+              @if (programas().length > 0) {
+                <select class="fi" formControlName="programaTutoriaId">
+                  <option [value]="null">Seleccionar programa</option>
+                  @for (p of programas(); track p.id) {
+                    <option [value]="p.id">{{p.nombre}}</option>
+                  }
+                </select>
+              } @else {
+                <input class="fi" type="number" formControlName="programaTutoriaId" placeholder="ID del programa">
+              }
+              @if (hasError(formTutorGrado, 'programaTutoriaId')) { <span class="fe">Requerido</span> }
+            </div>
+            <div class="fg">
+              <label class="fl">Grado *</label>
+              @if (hasGrados()) {
+                <select class="fi" formControlName="gradoId">
+                  <option [value]="null">Seleccionar grado</option>
+                  @for (g of gradosLookup(); track g.id) {
+                    <option [value]="g.id">{{g.nombre}}</option>
+                  }
+                </select>
+              } @else {
+                <input class="fi" type="number" formControlName="gradoId" placeholder="ID del grado">
+              }
+              @if (hasError(formTutorGrado, 'gradoId')) { <span class="fe">Requerido</span> }
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Profesor *</label>
+            @if (hasProfesores()) {
+              <select class="fi" formControlName="profesorId">
+                <option [value]="null">Seleccionar profesor</option>
+                @for (prof of profesoresLookup(); track prof.id) {
+                  <option [value]="prof.id">{{prof.nombre}}</option>
+                }
+              </select>
+            } @else {
+              <input class="fi" type="number" formControlName="profesorId" placeholder="ID del profesor">
+            }
+            @if (hasError(formTutorGrado, 'profesorId')) { <span class="fe">Requerido</span> }
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Fecha inicio</label>
+              <input class="fi" type="date" formControlName="fechaInicio">
+            </div>
+            <div class="fg">
+              <label class="fl">Fecha fin</label>
+              <input class="fi" type="date" formControlName="fechaFin">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="mdl__ft">
+        <button class="btn btn--ghost" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn--primary" (click)="saveTutorGrado()" [disabled]="modalSaving()">
+          @if (modalSaving()) { <lucide-icon [img]="RefreshCw" size="14" class="spin" /> Guardando... }
+          @else { <lucide-icon [img]="Save" size="14" /> Guardar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== MODAL TUTOR ESTUDIANTE ===== -->
+@if (modalType() === 'tutorEstudiante') {
+  <div class="mbk" (click)="closeModal()">
+    <div class="mdl" (click)="$event.stopPropagation()">
+      <div class="mdl__hd">
+        <div class="mdl__hd-icon mdl__hd-icon--purple"><lucide-icon [img]="UserCheck" /></div>
+        <h3>{{ modalMode() === 'create' ? 'Nueva Tutoría' : 'Editar Tutoría' }}</h3>
+        <button class="mdl__x" (click)="closeModal()"><lucide-icon [img]="X" /></button>
+      </div>
+      <div class="mdl__bd">
+        <form [formGroup]="formTutorEstudiante">
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Estudiante *</label>
+              @if (hasEstudiantes()) {
+                <select class="fi" formControlName="estudianteId">
+                  <option [value]="null">Seleccionar estudiante</option>
+                  @for (est of estudiantesLookup(); track est.id) {
+                    <option [value]="est.id">{{est.nombre}}</option>
+                  }
+                </select>
+              } @else {
+                <input class="fi" type="number" formControlName="estudianteId" placeholder="ID del estudiante">
+              }
+              @if (hasError(formTutorEstudiante, 'estudianteId')) { <span class="fe">Requerido</span> }
+            </div>
+            <div class="fg">
+              <label class="fl">Profesor *</label>
+              @if (hasProfesores()) {
+                <select class="fi" formControlName="profesorId">
+                  <option [value]="null">Seleccionar profesor</option>
+                  @for (prof of profesoresLookup(); track prof.id) {
+                    <option [value]="prof.id">{{prof.nombre}}</option>
+                  }
+                </select>
+              } @else {
+                <input class="fi" type="number" formControlName="profesorId" placeholder="ID del profesor">
+              }
+              @if (hasError(formTutorEstudiante, 'profesorId')) { <span class="fe">Requerido</span> }
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Tipo *</label>
+            <select class="fi" formControlName="tipo">
+              @for (t of tiposTutorEst; track t) { <option [value]="t">{{t}}</option> }
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Programa (ID)</label>
+            @if (programas().length > 0) {
+              <select class="fi" formControlName="programaTutoriaId">
+                <option [value]="null">Sin programa (opcional)</option>
+                @for (p of programas(); track p.id) {
+                  <option [value]="p.id">{{p.nombre}}</option>
+                }
+              </select>
+            } @else {
+              <input class="fi" type="number" formControlName="programaTutoriaId" placeholder="ID del programa (opcional)">
+            }
+          </div>
+          <div class="fg">
+            <label class="fl">Motivo</label>
+            <textarea class="fi" formControlName="motivo" rows="2" placeholder="Motivo de la tutoría"></textarea>
+          </div>
+          <div class="fg">
+            <label class="fl">Objetivos</label>
+            <textarea class="fi" formControlName="objetivos" rows="2" placeholder="Objetivos de la tutoría"></textarea>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Fecha inicio</label>
+              <input class="fi" type="date" formControlName="fechaInicio">
+            </div>
+            <div class="fg">
+              <label class="fl">Fecha fin</label>
+              <input class="fi" type="date" formControlName="fechaFin">
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Derivado por (ID)</label>
+            <input class="fi" type="number" formControlName="derivadoPor" placeholder="ID del usuario que deriva">
+          </div>
+        </form>
+      </div>
+      <div class="mdl__ft">
+        <button class="btn btn--ghost" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn--primary" (click)="saveTutorEstudiante()" [disabled]="modalSaving()">
+          @if (modalSaving()) { <lucide-icon [img]="RefreshCw" size="14" class="spin" /> Guardando... }
+          @else { <lucide-icon [img]="Save" size="14" /> Guardar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== MODAL SESIÓN ===== -->
+@if (modalType() === 'sesion') {
+  <div class="mbk" (click)="closeModal()">
+    <div class="mdl mdl--lg" (click)="$event.stopPropagation()">
+      <div class="mdl__hd">
+        <div class="mdl__hd-icon mdl__hd-icon--green"><lucide-icon [img]="ClipboardList" /></div>
+        <h3>{{ modalMode() === 'create' ? 'Nueva Sesión' : 'Editar Sesión' }}</h3>
+        <button class="mdl__x" (click)="closeModal()"><lucide-icon [img]="X" /></button>
+      </div>
+      <div class="mdl__bd">
+        <form [formGroup]="formSesion">
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Fecha de sesión *</label>
+              <input class="fi" type="date" formControlName="fechaSesion">
+              @if (hasError(formSesion, 'fechaSesion')) { <span class="fe">Requerido</span> }
+            </div>
+            <div class="fg">
+              <label class="fl">Hora inicio *</label>
+              <input class="fi" type="time" formControlName="horaInicio">
+              @if (hasError(formSesion, 'horaInicio')) { <span class="fe">Requerido</span> }
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Hora fin</label>
+              <input class="fi" type="time" formControlName="horaFin">
+            </div>
+            <div class="fg">
+              <label class="fl">Próxima sesión</label>
+              <input class="fi" type="date" formControlName="proximaSesion">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Tipo *</label>
+              <select class="fi" formControlName="tipo">
+                @for (t of tiposSesion; track t) { <option [value]="t">{{t}}</option> }
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">Modalidad</label>
+              <select class="fi" formControlName="modalidad">
+                @for (m of modalidadesSesion; track m) { <option [value]="m">{{m}}</option> }
+              </select>
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Tutor Grado (ID)</label>
+              <input class="fi" type="number" formControlName="tutorGradoId" placeholder="ID">
+            </div>
+            <div class="fg">
+              <label class="fl">Tutor Estudiante (ID)</label>
+              <input class="fi" type="number" formControlName="tutorEstudianteId" placeholder="ID">
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Temas tratados</label>
+            <textarea class="fi" formControlName="temasTratados" rows="2" placeholder="Temas abordados en la sesión"></textarea>
+          </div>
+          <div class="fg">
+            <label class="fl">Acuerdos</label>
+            <textarea class="fi" formControlName="acuerdos" rows="2" placeholder="Acuerdos alcanzados"></textarea>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Compromisos del alumno</label>
+              <textarea class="fi" formControlName="compromisosAlumno" rows="2"></textarea>
+            </div>
+            <div class="fg">
+              <label class="fl">Compromisos del tutor</label>
+              <textarea class="fi" formControlName="compromisosTutor" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Observaciones</label>
+            <textarea class="fi" formControlName="observaciones" rows="2"></textarea>
+          </div>
+          <div class="frow">
+            <div class="fchk">
+              <input type="checkbox" id="firmAlumno" formControlName="firmadoPorAlumno">
+              <label for="firmAlumno">Firmado por alumno</label>
+            </div>
+            <div class="fchk">
+              <input type="checkbox" id="firmPadre" formControlName="firmadoPorPadre">
+              <label for="firmPadre">Firmado por padre</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="mdl__ft">
+        <button class="btn btn--ghost" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn--primary" (click)="saveSesion()" [disabled]="modalSaving()">
+          @if (modalSaving()) { <lucide-icon [img]="RefreshCw" size="14" class="spin" /> Guardando... }
+          @else { <lucide-icon [img]="Save" size="14" /> Guardar }
+        </button>
+      </div>
+    </div>
+  </div>
+}

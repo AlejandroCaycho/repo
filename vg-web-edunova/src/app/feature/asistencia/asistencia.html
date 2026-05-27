@@ -1,0 +1,153 @@
+<div class="asistencia-container">
+  <div class="header">
+    <h1>Control de Asistencias</h1>
+    <p>Seleccione grado, clase y fecha</p>
+  </div>
+
+  <div class="filters-card">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label>Grado</label>
+        <select [(ngModel)]="selectedGradoId" (change)="onGradoChange()" class="form-control">
+          <option *ngFor="let g of gradosDisponibles" [ngValue]="g.id">{{g.nombre}}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Clase (Materia)</label>
+        <select [(ngModel)]="selectedClase" (change)="onClaseChange()" class="form-control">
+          <option [ngValue]="null" disabled>Seleccione una clase</option>
+          <option *ngFor="let c of clasesDisponibles" [ngValue]="c">{{c.nombre}}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Fecha</label>
+        <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" class="form-control" [max]="hoy">
+      </div>
+      
+      <div class="filter-group actions">
+        <button class="btn-excel" (click)="exportarExcel()" [disabled]="!selectedClase">
+          <lucide-icon [img]="FileSpreadsheet" [size]="16"></lucide-icon>
+          Exportar
+        </button>
+        <button class="btn-template" (click)="descargarPlantilla()">
+          <lucide-icon [img]="Download" [size]="16"></lucide-icon>
+          Plantilla
+        </button>
+      </div>
+    </div>
+    
+    <div class="stats-row" *ngIf="estudiantes.length > 0">
+      <div class="stat-card total" (click)="filtrarTodos()">
+        <div class="stat-number">{{getTotalCount()}}</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-card present" (click)="filtrarPresentes()">
+        <div class="stat-number">{{getPresentesCount()}}</div>
+        <div class="stat-label">Presentes</div>
+      </div>
+      <div class="stat-card absent" (click)="filtrarFaltas()">
+        <div class="stat-number">{{getFaltasCount()}}</div>
+        <div class="stat-label">Faltas</div>
+      </div>
+      <div class="stat-card late" (click)="filtrarTardanzas()">
+        <div class="stat-number">{{getTardanzasCount()}}</div>
+        <div class="stat-label">Tardanzas</div>
+      </div>
+      <div class="stat-card justified" (click)="filtrarJustificados()">
+        <div class="stat-number">{{getJustificadosCount()}}</div>
+        <div class="stat-label">Justificados</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card" *ngIf="selectedClase">
+    <div class="table-header">
+      <h3>{{selectedClase.nombre}} - {{getNombreGrado()}}</h3>
+      <button class="btn-save-all" (click)="guardarTodas()" [disabled]="saving">
+        <lucide-icon [img]="Save" [size]="16"></lucide-icon>
+        {{saving ? 'Guardando...' : 'Guardar todas'}}
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Cargando estudiantes...</p>
+    </div>
+
+    <div *ngIf="!loading" class="table-wrapper">
+      <div *ngIf="estudiantes.length === 0" class="empty-state">
+        <p>No hay estudiantes para este grado</p>
+      </div>
+      <table class="attendance-table" *ngIf="estudiantes.length > 0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Estudiante</th>
+            <th>Código</th>
+            <th>Estado</th>
+            <th>Observaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let student of estudiantesFiltrados; let i = index">
+            <td class="text-center">{{i + 1}}</td>
+            <td class="student-name">{{student.studentName}}</td>
+            <td class="student-code">{{student.studentCode}}</td>
+            <td class="status-cell">
+              <div class="status-buttons">
+                <button *ngFor="let opt of statusOptions"
+                  class="status-btn"
+                  [class.active]="student.status === opt.value"
+                  [style.background]="student.status === opt.value ? opt.color : '#f3f4f6'"
+                  [style.color]="student.status === opt.value ? 'white' : '#374151'"
+                  (click)="cambiarEstado(student, opt.value)">
+                  <lucide-icon [img]="opt.icon" [size]="14"></lucide-icon>
+                  {{opt.label}}
+                </button>
+              </div>
+            </td>
+            <td class="observation-cell">
+              <input type="text" [(ngModel)]="student.observation" 
+                placeholder="Observación" class="obs-input" (input)="programarAutoGuardado(student)">
+              <span *ngIf="hasChanges(student)" class="saving-indicator">⌛</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="empty-card" *ngIf="gradosDisponibles.length === 0 && !loading">
+    <p>No hay grados disponibles</p>
+  </div>
+  <div class="empty-card" *ngIf="selectedGradoId && clasesDisponibles.length === 0 && !loading">
+    <p>No hay clases para este grado</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showObservationModal" (click)="cerrarModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{modalNewStatus === 'T' ? 'Registrar tardanza' : 'Justificación requerida'}}</h3>
+      <button class="modal-close" (click)="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Estudiante: <strong>{{modalStudent?.studentName}}</strong></p>
+      <p>Estado: <strong>{{ modalNewStatus | attendanceStatusLabel }}</strong></p>
+      <div class="form-group" *ngIf="modalNewStatus === 'T'">
+        <label>Hora de llegada *</label>
+        <input type="time" [(ngModel)]="modalLateTime" class="form-control">
+      </div>
+      <div class="form-group" *ngIf="modalNewStatus === 'J'">
+        <label>Observación *</label>
+        <textarea [(ngModel)]="modalObservation" rows="3" placeholder="Ingrese el motivo..." class="form-control"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-confirm" (click)="confirmarCambioConObservacion()">Confirmar</button>
+    </div>
+  </div>
+</div>

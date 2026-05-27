@@ -1,0 +1,260 @@
+<div class="agenda-container">
+  <!-- Header -->
+  <header class="agenda-header">
+    <div class="header-title">
+      <div class="icon-container blue-soft">
+        <lucide-icon [name]="icons.Calendar" [size]="20" color="#2563eb"></lucide-icon>
+      </div>
+      <div>
+        <h1>Mi Agenda</h1>
+        <p>GESTIÓN DE TIEMPO Y COMUNICACIÓN</p>
+      </div>
+      <button class="btn-sync-premium" (click)="recargarTodo()" title="Sincronizar datos">
+        <lucide-icon [name]="icons.RefreshCw" [size]="16" color="#3b82f6"></lucide-icon>
+        <span>Sincronizar</span>
+      </button>
+    </div>
+    <div class="header-actions">
+      <!-- Módulo dedicado exclusivamente a comunicaciones, sin pestañas -->
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-info">
+          <p class="stat-title">MENSAJES NUEVOS</p>
+          <div class="stat-value-group">
+            <span *ngIf="!isLoading; else skText" class="stat-value">{{stats.mensajesNuevos.count}}</span>
+            <span *ngIf="!isLoading; else skBadge" class="stat-badge blue">{{stats.mensajesNuevos.badge}}</span>
+          </div>
+        </div>
+        <div class="stat-icon blue-bg outline-icon">
+          <lucide-icon [name]="icons.MessageSquare" [size]="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-info">
+          <p class="stat-title">GRUPOS ACTIVOS</p>
+          <div class="stat-value-group">
+            <span *ngIf="!isLoading; else skText" class="stat-value">{{stats.gruposActivos.count}}</span>
+            <span *ngIf="!isLoading; else skBadge" class="stat-badge green">{{stats.gruposActivos.badge}}</span>
+          </div>
+        </div>
+        <div class="stat-icon green-bg outline-icon">
+          <lucide-icon [name]="icons.Users" [size]="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-info">
+          <p class="stat-title">ARCHIVOS</p>
+          <div class="stat-value-group">
+            <span *ngIf="!isLoading; else skText" class="stat-value">{{stats.archivosCompartidos.count}}</span>
+            <span *ngIf="!isLoading; else skBadge" class="stat-badge orange">{{stats.archivosCompartidos.badge}}</span>
+          </div>
+        </div>
+        <div class="stat-icon orange-bg outline-icon">
+          <lucide-icon [name]="icons.FileText" [size]="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card clickable" (click)="verAvisos()">
+      <div class="stat-content">
+        <div class="stat-info">
+          <p class="stat-title">AVISOS SIN LEER</p>
+          <div class="stat-value-group">
+            <span *ngIf="!isLoading; else skText" class="stat-value">{{stats.recordatorios.count}}</span>
+            <span *ngIf="!isLoading; else skBadge" class="stat-badge purple">{{stats.recordatorios.badge}}</span>
+          </div>
+          <p class="stat-subtitle" *ngIf="ultimaNotificacion">
+            <lucide-icon [name]="icons.Info" [size]="10"></lucide-icon>
+            {{ultimaNotificacion}}
+          </p>
+        </div>
+        <div class="stat-icon purple-bg outline-icon">
+          <lucide-icon [name]="icons.Bell" [size]="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Area for Messages -->
+  <div class="main-content">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Mensajes</h2>
+        <button class="btn-add" (click)="crearNuevoGrupo()">
+          <lucide-icon [name]="icons.Plus" [size]="20" color="#2563eb"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="search-container">
+        <lucide-icon [name]="icons.Search" [size]="18" color="#94a3b8" class="search-icon"></lucide-icon>
+        <input type="text" placeholder="Buscar mensajes o chats... (Enter para buscar)" 
+               [(ngModel)]="searchQuery" (keyup.enter)="ejecutarBusqueda()">
+      </div>
+
+      <div class="chat-list" *ngIf="!isLoading; else skList">
+        <div *ngFor="let contact of contactosFiltrados; let i = index" class="chat-item"
+          [class.active]="selectedChatId === contact.id" (click)="selectChat(contact.id)">
+          <div class="avatar" [class.online]="contact.isOnline">
+            {{contact.initials}}
+          </div>
+          <div class="chat-item-content">
+            <div class="chat-item-header">
+              <span class="chat-name" [class.archived]="contact.archivado">{{contact.name}}</span>
+              <span class="chat-date">{{contact.date}}</span>
+            </div>
+            <p class="chat-last-message" [class.unread]="i === 0">{{contact.lastMessage}}</p>
+            <p class="chat-preview" *ngIf="contact.archivado" style="color:#92400e;font-weight:600;">
+              ARCHIVADO
+            </p>
+            <p class="chat-preview" *ngIf="!contact.archivado">{{contact.preview}}</p>
+          </div>
+          <!-- Botón de eliminar que aparece en hover -->
+          <button class="btn-delete-chat" (click)="confirmarEliminarChat($event, contact)">
+            <lucide-icon [name]="icons.Trash2" [size]="16" color="#ef4444"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Chat Window -->
+    <main class="chat-window">
+      <ng-container *ngIf="!isLoading; else skChat">
+        <div class="chat-header" *ngIf="selectedChat">
+          <div class="chat-header-info">
+            <div class="avatar">{{selectedChat.initials}}</div>
+            <div>
+              <h3>{{selectedChat.name}}</h3>
+              <p class="status">
+                <span class="status-dot" *ngIf="selectedChat.isOnline"></span>
+                {{selectedChat.isOnline ? 'EN LÍNEA' : 'DESCONECTADO'}}
+              </p>
+            </div>
+          </div>
+          <div class="chat-actions">
+            <button><lucide-icon [name]="icons.Phone" [size]="20" color="#64748b"></lucide-icon></button>
+            <button><lucide-icon [name]="icons.Video" [size]="20" color="#64748b"></lucide-icon></button>
+            <button (click)="verInfoGrupo()"><lucide-icon [name]="icons.Info" [size]="20" color="#64748b"></lucide-icon></button>
+          </div>
+        </div>
+
+        <div class="chat-body" *ngIf="selectedChat">
+          <div *ngFor="let msg of chatMessages" class="message-wrapper" [class.sent]="msg.isSent">
+
+            <div class="message-avatar" *ngIf="!msg.isSent">
+              {{selectedChat.initials}}
+            </div>
+
+            <div class="message-content-group">
+              <!-- Mensaje NORMAL (No eliminado) -->
+              <div *ngIf="!msg.eliminadoRemitente" class="message-bubble" [class.sent-bubble]="msg.isSent" [class.received-bubble]="!msg.isSent" [class.important-bubble]="msg.esImportante">
+                <p>{{msg.text}}</p>
+                <!-- Adjuntos del mensaje -->
+                <div class="adjuntos-list" *ngIf="msg.adjuntos && msg.adjuntos.length > 0">
+                  <a *ngFor="let adj of msg.adjuntos"
+                     [href]="getSafeUrl(adj.url)" target="_blank"
+                     class="adjunto-chip">
+                    <lucide-icon [name]="icons.Paperclip" [size]="12"></lucide-icon>
+                    <span>{{ adj.nombre }}</span>
+                    <span class="adjunto-size" *ngIf="adj.tamanoKb">({{adj.tamanoKb}}KB)</span>
+                  </a>
+                </div>
+
+                <!-- Botón de borrar mensaje (Hover) -->
+                <button class="btn-delete-msg" (click)="eliminarMensaje(msg)" title="Eliminar mensaje">
+                  <lucide-icon [name]="icons.Trash2" [size]="12" color="#ef4444"></lucide-icon>
+                </button>
+              </div>
+
+              <!-- Mensaje ELIMINADO -->
+              <div *ngIf="msg.eliminadoRemitente" class="message-bubble deleted-bubble" [class.sent-bubble]="msg.isSent" [class.received-bubble]="!msg.isSent">
+                <p class="deleted-text">
+                  <lucide-icon [name]="icons.Trash2" [size]="14" class="deleted-icon"></lucide-icon>
+                  <span>Este mensaje fue eliminado</span>
+                </p>
+                
+                <!-- Botón de restaurar (solo el remitente) -->
+                <button *ngIf="msg.isSent" class="btn-restore-msg" (click)="restaurarMensaje(msg)" title="Restaurar mensaje">
+                  <lucide-icon [name]="icons.RefreshCw" [size]="12" color="#3b82f6"></lucide-icon>
+                  <span>Restaurar</span>
+                </button>
+              </div>
+
+              <span class="message-time">{{msg.time}}</span>
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="chatMessages.length === 0">
+            No hay mensajes recientes en este grupo.
+          </div>
+        </div>
+
+        <div class="chat-input-area" *ngIf="selectedChat">
+          <div class="unified-input-container">
+            <button class="btn-attach" (click)="onAttach()">
+              <lucide-icon [name]="icons.Paperclip" [size]="20" color="#94a3b8"></lucide-icon>
+            </button>
+            <input type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessageText"
+              (keyup.enter)="sendMessage()">
+            <button class="btn-send" (click)="sendMessage()">
+              <lucide-icon [name]="icons.Send" [size]="18" color="#ffffff"></lucide-icon>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </main>
+  </div>
+
+
+</div>
+
+<!-- Skeletons Templates -->
+<ng-template #skText>
+  <div class="skeleton" style="width: 40px; height: 32px; margin-bottom: 4px;"></div>
+</ng-template>
+
+<ng-template #skBadge>
+  <div class="skeleton" style="width: 30px; height: 20px; border-radius: 12px;"></div>
+</ng-template>
+
+<ng-template #skList>
+  <div class="chat-list">
+    <div class="chat-item" *ngFor="let i of [1,2,3]">
+      <div class="skeleton avatar" style="border:none"></div>
+      <div class="chat-item-content">
+        <div class="skeleton" style="width: 60%; height: 16px; margin-bottom: 8px;"></div>
+        <div class="skeleton" style="width: 90%; height: 12px; margin-bottom: 4px;"></div>
+        <div class="skeleton" style="width: 40%; height: 12px;"></div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #skChat>
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="skeleton avatar" style="border:none"></div>
+      <div>
+        <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 8px;"></div>
+        <div class="skeleton" style="width: 80px; height: 12px;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="chat-body" style="padding: 2rem;">
+    <div class="skeleton" style="width: 60%; height: 40px; border-radius: 16px; margin-bottom: 1rem;"></div>
+    <div class="skeleton"
+      style="width: 50%; height: 60px; border-radius: 16px; margin-left: auto; margin-bottom: 1rem;"></div>
+    <div class="skeleton" style="width: 70%; height: 40px; border-radius: 16px;"></div>
+  </div>
+</ng-template>

@@ -1,0 +1,12 @@
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  min-width: 0;
+}

@@ -1,0 +1,149 @@
+<div class="examen-preguntas-container">
+  <!-- Header -->
+  <div class="preguntas-header">
+    <div class="header-info">
+      <h2>Preguntas del Examen</h2>
+      <p>{{ preguntasExamen().length }} preguntas · Puntaje total: {{ puntajeTotal }} pts</p>
+    </div>
+    <button class="btn-agregar" (click)="abrirModalAgregar()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      AGREGAR PREGUNTA
+    </button>
+  </div>
+
+  <!-- Lista de preguntas del examen -->
+  <div class="preguntas-lista">
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando preguntas...</p>
+      </div>
+    } @else if (preguntasExamen().length === 0) {
+      <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+        </svg>
+        <p>No hay preguntas en este examen</p>
+        <button class="btn-agregar-primera" (click)="abrirModalAgregar()">Agregar primera pregunta</button>
+      </div>
+    } @else {
+      @for (pregunta of preguntasExamen(); track pregunta.id) {
+        <div class="pregunta-item">
+          <div class="pregunta-orden">{{ pregunta.orden }}</div>
+          <div class="pregunta-contenido">
+            <div class="pregunta-texto">Pregunta del banco #{{ pregunta.bancoPreguntaId }}</div>
+            <div class="pregunta-puntaje">{{ pregunta.puntaje }} pts</div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Modal para agregar pregunta -->
+  @if (mostrarModalAgregar()) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Agregar Pregunta al Examen</h2>
+          <button class="btn-cerrar" (click)="cerrarModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Filtros -->
+          <div class="filtros-banco">
+            <div class="busqueda-box">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+              <input 
+                type="text" 
+                placeholder="Buscar preguntas..."
+                [(ngModel)]="busqueda">
+            </div>
+
+            <div class="filtros-group">
+              <button 
+                class="filtro-btn"
+                [class.active]="filtroDificultad() === 'TODAS'"
+                (click)="cambiarDificultad('TODAS')">
+                TODAS
+              </button>
+              <button 
+                class="filtro-btn facil"
+                [class.active]="filtroDificultad() === 'FACIL'"
+                (click)="cambiarDificultad('FACIL')">
+                FÁCIL
+              </button>
+              <button 
+                class="filtro-btn medio"
+                [class.active]="filtroDificultad() === 'MEDIO'"
+                (click)="cambiarDificultad('MEDIO')">
+                MEDIO
+              </button>
+              <button 
+                class="filtro-btn dificil"
+                [class.active]="filtroDificultad() === 'DIFICIL'"
+                (click)="cambiarDificultad('DIFICIL')">
+                DIFÍCIL
+              </button>
+            </div>
+          </div>
+
+          <!-- Lista de preguntas del banco -->
+          <div class="banco-lista">
+            @if (preguntasBancoFiltradas.length === 0) {
+              <div class="empty-banco">
+                <p>No hay preguntas disponibles en el banco</p>
+              </div>
+            } @else {
+              @for (pregunta of preguntasBancoFiltradas; track pregunta.id) {
+                <div 
+                  class="banco-item"
+                  [class.selected]="preguntaForm.get('bancoPreguntaId')?.value === pregunta.id"
+                  (click)="seleccionarPregunta(pregunta)">
+                  <div class="banco-header">
+                    <span class="banco-tipo">{{ getTipoIcon(pregunta.tipo) }}</span>
+                    <span class="banco-dificultad" [ngClass]="getDificultadClass(pregunta.dificultad)">
+                      {{ pregunta.dificultad }}
+                    </span>
+                  </div>
+                  <div class="banco-enunciado">{{ pregunta.enunciado }}</div>
+                  @if (pregunta.tags) {
+                    <div class="banco-tags">{{ pregunta.tags }}</div>
+                  }
+                </div>
+              }
+            }
+          </div>
+
+          <!-- Configuración de la pregunta -->
+          <form [formGroup]="preguntaForm" class="pregunta-config">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Orden</label>
+                <input type="number" formControlName="orden" min="1">
+              </div>
+              <div class="form-group">
+                <label>Puntaje</label>
+                <input type="number" formControlName="puntaje" min="0.1" step="0.5">
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button class="btn-guardar" (click)="agregarPregunta()" [disabled]="preguntaForm.invalid">
+            Agregar Pregunta
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

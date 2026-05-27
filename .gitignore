@@ -1,0 +1,31 @@
+# Dependency directories
+node_modules/
+.angular/
+
+# Build outputs
+target/
+dist/
+*.jar
+*.war
+*.class
+
+# IDE and system files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Temp and log files
+*.log
+tmp/
+temp/
+
+# Ignore env files by default (we will force-add the specific one)
+.env
+.env.local
+.env.*.local

@@ -1,0 +1,583 @@
+<div class="instituciones">
+
+  <header class="instituciones__header">
+    <div class="instituciones__titulo">
+      <div class="instituciones__titulo-icono-bg"><lucide-icon name="building" [size]="20"></lucide-icon></div>
+      <div>
+        <h1>Red de Instituciones</h1>
+        <span class="instituciones__subtitulo">Gestión global de sedes</span>
+      </div>
+    </div>
+    <button class="btn btn--primario" (click)="abrirModal()">
+      + NUEVA INSTITUCIÓN
+    </button>
+  </header>
+
+  <div class="instituciones__body">
+    <div class="instituciones__stats">
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Total Sedes</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ instituciones().length || '12' }}</span>
+            <span class="stat-card__pill stat-card__pill--blue">Online</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--blue">
+          <lucide-icon name="building" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Sedes Activas</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalActivas() || '11' }}</span>
+            <span class="stat-card__pill stat-card__pill--blue">Online</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--green">
+          <lucide-icon name="shield-check" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Cobertura Nal.</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">08</span>
+            <span class="stat-card__pill stat-card__pill--blue">Online</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--orange">
+          <lucide-icon name="globe" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Dptos. Registrados</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">05</span>
+            <span class="stat-card__pill stat-card__pill--blue">Online</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--purple">
+          <lucide-icon name="map-pin" [size]="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="instituciones__controles">
+      <div style="display:flex; gap:12px; align-items:center; flex:1;">
+        <div class="buscador">
+          <lucide-icon name="search" class="buscador__icono" [size]="16"></lucide-icon>
+          <input type="text" placeholder="BUSCAR INSTITUCIÓN..." class="buscador__input"
+            (input)="setBusqueda($event)" />
+        </div>
+        <div class="vista-toggle">
+          <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'lista'"
+            (click)="setVista('lista')" title="Vista lista">
+            <lucide-icon name="list" [size]="16"></lucide-icon>
+          </button>
+          <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'grilla'"
+            (click)="setVista('grilla')" title="Vista grilla">
+            <lucide-icon name="layout-grid" [size]="16"></lucide-icon>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <div style="position: relative;">
+          <button class="btn btn--outline" (click)="toggleDropdown()"
+            style="width: 220px; justify-content: space-between; display: flex;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <lucide-icon name="filter" [size]="16"></lucide-icon>
+              {{ textoFiltro() }}
+            </div>
+            <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+          </button>
+
+          @if (dropdownAbierto()) {
+          <div class="modal-overlay" style="background: transparent; backdrop-filter: none;"
+            (click)="dropdownAbierto.set(false)"></div>
+          <div
+            style="position: absolute; top: calc(100% + 8px); right: 0; width: 220px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); display: flex; flex-direction: column; padding: 6px; z-index: 1001;">
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'todas'"
+              (click)="seleccionarFiltro('todas')">
+              <lucide-icon name="globe" [size]="16"></lucide-icon> Ver Todas las sedes
+            </button>
+            <div style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'estado_activa'"
+              (click)="seleccionarFiltro('estado_activa')">
+              <lucide-icon name="check-circle" [size]="16"></lucide-icon> Mostrar solo Activas
+            </button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'estado_inactiva'"
+              (click)="seleccionarFiltro('estado_inactiva')">
+              <lucide-icon name="x-circle" [size]="16"></lucide-icon> Mostrar solo Inactivas
+            </button>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="contenido-wrapper">
+
+      @if (cargando()) {
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th><div class="skeleton skeleton-text" style="width: 150px;"></div></th>
+              <th><div class="skeleton skeleton-text" style="width: 120px;"></div></th>
+              <th><div class="skeleton skeleton-text" style="width: 100px;"></div></th>
+              <th><div class="skeleton skeleton-text" style="width: 80px;"></div></th>
+              <th><div class="skeleton skeleton-text" style="width: 80px;"></div></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of [1,2,3,4,5]; track i) {
+            <tr class="tabla__fila">
+              <td>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <div class="skeleton skeleton-circle"></div>
+                  <div style="flex: 1;">
+                    <div class="skeleton skeleton-title"></div>
+                    <div class="skeleton skeleton-text" style="width: 40%;"></div>
+                  </div>
+                </div>
+              </td>
+              <td><div class="skeleton skeleton-text" style="width: 70%;"></div><div class="skeleton skeleton-text" style="width: 50%;"></div></td>
+              <td><div class="skeleton skeleton-text" style="width: 60px; height: 20px; border-radius: 8px;"></div></td>
+              <td><div class="skeleton skeleton-text" style="width: 80px; height: 20px; border-radius: 8px;"></div></td>
+              <td><div class="skeleton" style="width: 60px; height: 20px; border-radius: 8px;"></div></td>
+              <td><div style="display: flex; gap: 8px; justify-content: flex-end;"><div class="skeleton" style="width: 32px; height: 32px; border-radius: 8px;"></div><div class="skeleton" style="width: 32px; height: 32px; border-radius: 8px;"></div></div></td>
+            </tr>
+            }
+            <tr class="tabla__fila tabla__fila--relleno" aria-hidden="true">
+              <td colspan="6"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      }
+
+      @if (!cargando() && vistaMode() === 'lista') {
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Institución</th>
+              <th>Ubicación</th>
+              <th>Contacto</th>
+              <th>Tipo</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (inst of filtradasPaginadas(); track inst.uuid) {
+            <tr class="tabla__fila">
+              <td>
+                <div class="inst-info">
+                  <div class="inst-info__icono-bg">
+                    @if (inst.logoUrl) {
+                    <img [src]="inst.logoUrl" class="inst-info__logo" alt="Logo" />
+                    } @else {
+                    <lucide-icon name="building" [size]="20"></lucide-icon>
+                    }
+                  </div>
+                  <div>
+                    <div class="inst-info__nombre">{{ inst.nombre | uppercase }}</div>
+                    <div class="inst-info__codigo">{{ inst.codigoModular || inst.nombreCorto || '—' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="tabla__ciudad">{{ inst.ciudad || '—' }}{{ inst.departamento ? ', ' + inst.departamento : '' }}</div>
+                <div class="tabla__sub">{{ inst.direccion || '—' }}</div>
+              </td>
+              <td>
+                <div class="tabla__email">{{ inst.email || '—' }}</div>
+                <div class="tabla__sub">{{ inst.telefono || '—' }}</div>
+              </td>
+              <td><span class="etiqueta-tipo">{{ inst.tipoInstitucion || '—' }}</span></td>
+              <td>
+                @if (esEliminado(inst)) {
+                <span class="etiqueta-estado etiqueta-estado--eliminado">ELIMINADO</span>
+                } @else {
+                <span class="etiqueta-estado" [class.etiqueta-estado--activo]="esActiva(inst)" [class.etiqueta-estado--inactivo]="!esActiva(inst)">
+                  {{ esActiva(inst) ? 'ACTIVO' : 'INACTIVO' }}
+                </span>
+                }
+              </td>
+              <td>
+                <div class="acciones">
+                  @if (!esEliminado(inst)) {
+                  <button class="btn-icono" (click)="verDetalle(inst)" title="Ver"><lucide-icon name="eye" [size]="16"></lucide-icon></button>
+                  <button class="btn-icono" (click)="abrirModal(inst)" title="Editar"><lucide-icon name="edit" [size]="16"></lucide-icon></button>
+                  <button class="btn-icono" (click)="toggleEstado(inst)" [title]="esActiva(inst) ? 'Desactivar' : 'Activar'"><lucide-icon name="power" [size]="16" [style.color]="esActiva(inst) ? '#ef4444' : '#10b981'"></lucide-icon></button>
+                  <button class="btn-icono btn-icono--peligro" (click)="eliminar(inst.uuid)" title="Eliminar"><lucide-icon name="trash" [size]="16"></lucide-icon></button>
+                  }
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr><td colspan="6" class="tabla__vacio">Sin resultados</td></tr>
+            }
+            @for (_ of filasRelleno(); track $index) {
+            <tr class="tabla__fila tabla__fila--relleno" aria-hidden="true">
+              <td colspan="6"></td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+
+      @if (!cargando() && vistaMode() === 'grilla') {
+      <div class="grilla">
+        @for (inst of filtradasPaginadas(); track inst.uuid) {
+        <div class="grilla__card">
+          <div class="grilla__card-icono-bg">
+            @if (inst.logoUrl) { <img [src]="inst.logoUrl" class="inst-info__logo grilla__card-logo" alt="Logo" /> }
+            @else { <lucide-icon name="building" [size]="24"></lucide-icon> }
+          </div>
+          <div class="grilla__card-nombre">{{ inst.nombre | uppercase }}</div>
+          <div class="grilla__card-codigo">{{ inst.codigoModular || inst.nombreCorto || '—' }}</div>
+          <div class="grilla__separator"></div>
+          <div class="grilla__card-ciudad"><lucide-icon name="map-pin" [size]="14"></lucide-icon> {{ inst.ciudad || '—' }}{{ inst.departamento ? ', ' + inst.departamento : '' }}</div>
+          <div class="grilla__card-contacto"><lucide-icon name="mail" [size]="14"></lucide-icon> {{ inst.email || '—' }}</div>
+          <div class="grilla__card-contacto"><lucide-icon name="phone" [size]="14"></lucide-icon> {{ inst.telefono || '—' }}</div>
+          @if (esEliminado(inst)) {
+          <span class="etiqueta-estado etiqueta-estado--eliminado" style="margin-top: 4px;">ELIMINADO</span>
+          } @else {
+          <span class="etiqueta-estado" [class.etiqueta-estado--activo]="esActiva(inst)" [class.etiqueta-estado--inactivo]="!esActiva(inst)" style="margin-top: 4px;">
+            {{ esActiva(inst) ? 'ACTIVO' : 'INACTIVO' }}
+          </span>
+          }
+          <div class="grilla__card-acciones">
+            @if (!esEliminado(inst)) {
+            <button class="btn-icono" (click)="verDetalle(inst)" title="Ver"><lucide-icon name="eye" [size]="16"></lucide-icon></button>
+            <button class="btn-icono" (click)="abrirModal(inst)" title="Editar"><lucide-icon name="edit" [size]="16"></lucide-icon></button>
+            <button class="btn-icono" (click)="toggleEstado(inst)" [title]="esActiva(inst) ? 'Desactivar' : 'Activar'"><lucide-icon name="power" [size]="16" [style.color]="esActiva(inst) ? '#ef4444' : '#10b981'"></lucide-icon></button>
+            <button class="btn-icono btn-icono--peligro" (click)="eliminar(inst.uuid)" title="Eliminar"><lucide-icon name="trash" [size]="16"></lucide-icon></button>
+            }
+          </div>
+        </div>
+        } @empty {
+        <p class="instituciones__cargando">Sin resultados</p>
+        }
+      </div>
+      }
+
+      @if (!cargando()) {
+      <div class="paginacion">
+        <div class="paginacion__info">
+          <span>PÁGINA: {{ paginaActual() }} DE {{ totalPaginas() }}</span>
+          <div class="paginacion__barra"><div class="paginacion__progreso" [style.width.%]="(paginaActual() / totalPaginas()) * 100"></div></div>
+        </div>
+        <div class="paginacion__controles">
+          <button class="btn-icono" (click)="cambiarPagina(-1)" [disabled]="paginaActual() === 1" [style.opacity]="paginaActual() === 1 ? '0.5' : '1'"><lucide-icon name="chevron-left" [size]="16"></lucide-icon></button>
+          <button class="btn-paginacion btn-paginacion--activo">{{ paginaActual() }}</button>
+          <button class="btn-icono" (click)="cambiarPagina(1)" [disabled]="paginaActual() === totalPaginas()" [style.opacity]="paginaActual() === totalPaginas() ? '0.5' : '1'"><lucide-icon name="chevron-right" [size]="16"></lucide-icon></button>
+        </div>
+      </div>
+      }
+
+    </div>
+  </div>
+
+  @if (mostrarModal()) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__titulo">
+          <div
+            style="width: 32px; height: 32px; background: #E9F0FE; color: #165EF0; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 8px;">
+            <lucide-icon name="building" [size]="18"></lucide-icon>
+          </div>
+          <div>
+            <strong>{{ editando() ? 'Editar Institución' : 'Nueva Institución' }}</strong>
+            <span class="modal__subtitulo">REGISTRO DE SEDE</span>
+          </div>
+        </div>
+        <button class="modal__cerrar" (click)="cerrarModal()">
+          <lucide-icon name="x" [size]="18"></lucide-icon>
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="modal__body">
+
+        <div class="campo-fila">
+          <div class="campo" style="flex: 2;">
+            <label>Nombre de la Institución *</label>
+            <input formControlName="nombre" type="text" placeholder="Ej. Colegio San Juan Bautista" />
+            @if (campoError('nombre'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+          <div class="campo">
+            <label>Nombre Corto</label>
+            <input formControlName="nombreCorto" type="text" placeholder="Ej. CSJB" />
+            @if (campoError('nombreCorto'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+        </div>
+
+        <div class="campo-fila">
+          <div class="campo">
+            <label>Código Modular</label>
+            <input formControlName="codigoModular" type="text" placeholder="Ej. 1234567" maxlength="7" inputmode="numeric" (input)="soloNumeros($event, 'codigoModular')" />
+            @if (campoError('codigoModular'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+          <div class="campo">
+            <label>Email Principal</label>
+            <input formControlName="email" type="email" placeholder="contacto@institucion.edu.pe" />
+            @if (campoError('email'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+          <div class="campo">
+            <label>Email Secundario</label>
+            <input formControlName="emailSecundario" type="email" placeholder="admin@institucion.edu.pe" />
+            @if (campoError('emailSecundario'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+        </div>
+
+        <div class="campo-fila">
+          <div class="campo">
+            <label>Teléfono</label>
+            <input formControlName="telefono" type="text" placeholder="Ej. 987654321" maxlength="9" inputmode="numeric" (input)="soloNumeros($event, 'telefono')" />
+            @if (campoError('telefono'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+          <div class="campo">
+            <label>Teléfono Secundario</label>
+            <input formControlName="telefonoSecundario" type="text" placeholder="Ej. 912345678" maxlength="9" inputmode="numeric" (input)="soloNumeros($event, 'telefonoSecundario')" />
+            @if (campoError('telefonoSecundario'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+          <div class="campo">
+            <label>Sitio Web</label>
+            <input formControlName="sitioWeb" type="url" placeholder="https://www.institucion.edu.pe" />
+            @if (campoError('sitioWeb'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+        </div>
+        <div class="campo-fila">
+          <div class="campo" style="flex: 2;">
+            <label>Dirección</label>
+            <input formControlName="direccion" type="text" placeholder="Av. Los Rosales 123" />
+            @if (campoError('direccion'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+          <div class="campo">
+            <label>Código Postal</label>
+            <input formControlName="codigoPostal" type="text" placeholder="15001" maxlength="5" inputmode="numeric" (input)="soloNumeros($event, 'codigoPostal')" />
+            @if (campoError('codigoPostal'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+        </div>
+
+        <div class="campo-fila">
+          <div class="campo">
+            <label>Ciudad</label>
+            <input formControlName="ciudad" type="text" placeholder="Lima" />
+            @if (campoError('ciudad'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+          <div class="campo">
+            <label>Departamento</label>
+            <input formControlName="departamento" type="text" placeholder="Lima" />
+            @if (campoError('departamento'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+          <div class="campo">
+            <label>País</label>
+            <input formControlName="pais" type="text" placeholder="Peru" />
+            @if (campoError('pais'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+        </div>
+
+        <div class="campo-fila">
+          <div class="campo">
+            <label>URL del Logo</label>
+            <input formControlName="logoUrl" type="url" placeholder="https://www.institucion.edu.pe/logo.png" />
+            @if (campoError('logoUrl'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+          <div class="campo" style="position: relative;">
+            <label>Tipo de Institución</label>
+            <button type="button" class="btn--outline"
+              style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: white; height: 40px; padding: 0 16px; font-weight: 500; font-size: 0.8rem; color: #1E222A; border-color: #EAEDF2;"
+              (click)="formDropdownAbierto.set(!formDropdownAbierto())">
+              <span>{{ textoTipo() }}</span>
+              <lucide-icon name="chevron-down" [size]="16" style="color: #8A94A6;"></lucide-icon>
+            </button>
+
+            @if (formDropdownAbierto()) {
+            <div class="modal-overlay" style="background: transparent; backdrop-filter: none; z-index: 1002;"
+              (click)="formDropdownAbierto.set(false)"></div>
+            <div
+              style="position: absolute; top: calc(100% + 4px); left: 0; width: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); display: flex; flex-direction: column; padding: 4px; z-index: 1003;">
+              <button type="button" class="dropdown-item" (click)="seleccionarTipo('PUBLICA')">Pública</button>
+              <button type="button" class="dropdown-item" (click)="seleccionarTipo('PRIVADA')">Privada</button>
+              <button type="button" class="dropdown-item" (click)="seleccionarTipo('CONCERTADA')">Concertada</button>
+            </div>
+            }
+          </div>
+          <div class="campo">
+            <label>Resolución de Creación</label>
+            <input formControlName="resolucionCreacion" type="text" placeholder="RD-123-2000" />
+            @if (campoError('resolucionCreacion'); as error) { <small class="campo__error">{{ error }}</small> }
+          </div>
+        </div>
+
+        <div class="modal__footer">
+          <button type="button" class="btn btn--secundario" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primario" [disabled]="form.invalid">
+            {{ editando() ? 'Guardar Cambios' : 'Registrar Sede' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  <div class="rightbar-overlay" [class.rightbar-overlay--visible]="mostrarDetalle()" (click)="cerrarDetalle()"></div>
+  <aside class="rightbar" [class.rightbar--open]="mostrarDetalle()">
+    @if (detalleCargando()) {
+    <div class="rightbar__header">
+      <div class="rightbar__header-info">
+        <div class="rightbar__icono-bg skeleton" style="width:38px;height:38px;border-radius:8px;"></div>
+        <div style="flex:1;">
+          <div class="skeleton skeleton-title" style="width:60%;"></div>
+          <div class="skeleton skeleton-text" style="width:40%;margin-top:4px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="rightbar__body" style="gap:24px;">
+      @for (s of [1,2,3,4]; track s) {
+      <div>
+        <div class="skeleton skeleton-text" style="width:30%;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+          @for (c of [1,2,3,4]; track c) {
+          <div>
+            <div class="skeleton skeleton-text" style="width:50%;"></div>
+            <div class="skeleton skeleton-rect" style="height:36px;margin-top:4px;"></div>
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+    } @else if (detalle(); as d) {
+    <div class="rightbar__header">
+      <div class="rightbar__header-info">
+        <div class="rightbar__icono-bg">
+          <lucide-icon name="building" [size]="18"></lucide-icon>
+        </div>
+        <div>
+          <strong>{{ d.nombre | uppercase }}</strong>
+          <span class="rightbar__subtitulo">{{ (d.tipoInstitucion || 'INSTITUCIÓN') | uppercase }}{{ d.codigoModular ? ' · ' +
+            d.codigoModular : '' }}</span>
+        </div>
+      </div>
+      <button class="modal__cerrar" (click)="cerrarDetalle()">
+        <lucide-icon name="x" [size]="18"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="rightbar__body">
+      <div class="rightbar__seccion">
+        <h3 class="rightbar__seccion-titulo">Información General</h3>
+        <div class="detalle-grid detalle-grid--3cols">
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Nombre</span>
+            <span class="detalle-campo__valor">{{ d.nombre | uppercase }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Nombre Corto</span>
+            <span class="detalle-campo__valor">{{ d.nombreCorto || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Código Modular</span>
+            <span class="detalle-campo__valor">{{ d.codigoModular || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Tipo</span>
+            <span class="detalle-campo__valor">{{ d.tipoInstitucion || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Resolución</span>
+            <span class="detalle-campo__valor">{{ d.resolucionCreacion || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Logo URL</span>
+            <span class="detalle-campo__valor detalle-campo__valor--url" [title]="d.logoUrl || ''">{{ d.logoUrl || '—'
+              }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rightbar__seccion">
+        <h3 class="rightbar__seccion-titulo">Contacto</h3>
+        <div class="detalle-grid detalle-grid--3cols">
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Email Principal</span>
+            <span class="detalle-campo__valor">{{ d.email || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Email Secundario</span>
+            <span class="detalle-campo__valor">{{ d.emailSecundario || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Teléfono</span>
+            <span class="detalle-campo__valor">{{ d.telefono || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Teléfono Secundario</span>
+            <span class="detalle-campo__valor">{{ d.telefonoSecundario || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Sitio Web</span>
+            <span class="detalle-campo__valor">{{ d.sitioWeb || '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rightbar__seccion">
+        <h3 class="rightbar__seccion-titulo">Ubicación</h3>
+        <div class="detalle-grid detalle-grid--3cols">
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Dirección</span>
+            <span class="detalle-campo__valor">{{ d.direccion || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Ciudad</span>
+            <span class="detalle-campo__valor">{{ d.ciudad || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Departamento</span>
+            <span class="detalle-campo__valor">{{ d.departamento || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">País</span>
+            <span class="detalle-campo__valor">{{ d.pais || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Código Postal</span>
+            <span class="detalle-campo__valor">{{ d.codigoPostal || '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rightbar__seccion">
+        <h3 class="rightbar__seccion-titulo">Fechas</h3>
+        <div class="detalle-grid">
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Creado</span>
+            <span class="detalle-campo__valor">{{ formatearFecha(d.createdAt) }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Actualizado</span>
+            <span class="detalle-campo__valor">{{ formatearFecha(d.updatedAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rightbar__footer">
+      <button type="button" class="btn btn--secundario" (click)="cerrarDetalle()">Cerrar</button>
+      <button type="button" class="btn btn--primario" (click)="cerrarDetalle(); abrirModal(d)">Editar</button>
+    </div>
+    }
+  </aside>
+
+</div>

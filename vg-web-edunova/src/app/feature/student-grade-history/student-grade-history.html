@@ -1,0 +1,228 @@
+<section class="page">
+  <header class="page-header">
+    <div class="page-title">
+      <span class="page-icon">
+        <lucide-icon [img]="History" [size]="22"></lucide-icon>
+      </span>
+      <div>
+        <h1>Historial de Grados</h1>
+        <p>Movimientos academicos del estudiante por ano escolar</p>
+      </div>
+    </div>
+
+    <button class="btn-primary" type="button" (click)="openCreateModal()">
+      <lucide-icon [img]="Plus" [size]="18"></lucide-icon>
+      Nuevo movimiento
+    </button>
+  </header>
+
+  <div class="summary-grid">
+    <article class="summary-card">
+      <span>Total registros</span>
+      <strong>{{ histories().length }}</strong>
+      <small>Movimientos</small>
+    </article>
+    <article class="summary-card">
+      <span>Promociones</span>
+      <strong>{{ totalPromotion() }}</strong>
+      <small>Avances de grado</small>
+    </article>
+    <article class="summary-card">
+      <span>Traslados</span>
+      <strong>{{ totalTransfers() }}</strong>
+      <small>Cambios externos</small>
+    </article>
+    <article class="summary-card">
+      <span>Retiros</span>
+      <strong>{{ totalWithdrawals() }}</strong>
+      <small>Movimientos de salida</small>
+    </article>
+  </div>
+
+  <div class="toolbar">
+    <label class="search-box">
+      <lucide-icon [img]="Search" [size]="18"></lucide-icon>
+      <input type="search" placeholder="Buscar por estudiante, grado o motivo" (input)="setSearch($event)">
+    </label>
+
+    <label class="filter-box">
+      <lucide-icon [img]="Filter" [size]="18"></lucide-icon>
+      <select [value]="movementFilter()" (change)="setMovementFilter($event)">
+        <option value="todos">Todos los movimientos</option>
+        <option value="promotion">Promociones</option>
+        <option value="repetition">Repitencias</option>
+        <option value="transfer">Traslados</option>
+        <option value="withdrawal">Retiros</option>
+      </select>
+    </label>
+  </div>
+
+  <section class="table-shell">
+    @if (loading()) {
+      <div class="empty-state">
+        <lucide-icon [img]="Clock" [size]="28"></lucide-icon>
+        <strong>Cargando historial</strong>
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="empty-state">
+        <lucide-icon [img]="History" [size]="28"></lucide-icon>
+        <strong>No hay movimientos registrados</strong>
+      </div>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Estudiante</th>
+            <th>Movimiento</th>
+            <th>Cambio de grado</th>
+            <th>Ano academico</th>
+            <th>Fecha</th>
+            <th>Autorizado por</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of filtered(); track item.id) {
+            <tr>
+              <td>
+                <div class="student-cell">
+                  <span>
+                    <lucide-icon [img]="GraduationCap" [size]="18"></lucide-icon>
+                  </span>
+                  <div>
+                    <strong>{{ item.studentName }}</strong>
+                    <small>ID {{ item.studentId }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="movement-badge" [class]="movementClass(item.movementType)">
+                  {{ movementLabel(item.movementType) }}
+                </span>
+              </td>
+              <td>
+                <div class="grade-flow">
+                  <span>{{ item.previousGradeName }}</span>
+                  <lucide-icon [img]="ArrowRight" [size]="16"></lucide-icon>
+                  <strong>{{ item.newGradeName }}</strong>
+                </div>
+                @if (item.reason) {
+                  <small class="reason">{{ item.reason }}</small>
+                }
+              </td>
+              <td>{{ item.academicYearName }}</td>
+              <td>
+                <span class="date-cell">
+                  <lucide-icon [img]="CalendarDays" [size]="16"></lucide-icon>
+                  {{ formatDate(item.changeDate) }}
+                </span>
+              </td>
+              <td>
+                <span class="date-cell">
+                  <lucide-icon [img]="UserCheck" [size]="16"></lucide-icon>
+                  {{ item.authorizedBy || '-' }}
+                </span>
+              </td>
+              <td class="actions">
+                <button type="button" class="icon-btn danger" title="Eliminar" (click)="delete(item.id)">
+                  <lucide-icon [img]="Trash" [size]="17"></lucide-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+</section>
+
+@if (modalOpen()) {
+  <div class="modal-backdrop">
+    <form class="modal" [formGroup]="form" (ngSubmit)="save()">
+      <header class="modal-header">
+        <div>
+          <h2>Nuevo movimiento de grado</h2>
+          <p>Registra el cambio dentro del historial academico del estudiante</p>
+        </div>
+        <button type="button" class="icon-btn" (click)="closeModal()">
+          <lucide-icon [img]="X" [size]="18"></lucide-icon>
+        </button>
+      </header>
+
+      <div class="modal-body">
+        <label class="field field--wide">
+          <span>Estudiante *</span>
+          <select formControlName="studentId">
+            <option [ngValue]="null">Seleccionar estudiante</option>
+            @for (student of students(); track student.id) {
+              <option [ngValue]="student.id">{{ student.personName || ('Estudiante ' + student.id) }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Grado anterior</span>
+          <select formControlName="previousGradeId">
+            <option [ngValue]="null">Primer ingreso / sin grado previo</option>
+            @for (grade of grades(); track grade.id) {
+              <option [ngValue]="grade.id">{{ grade.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Nuevo grado *</span>
+          <select formControlName="newGradeId">
+            <option [ngValue]="null">Seleccionar grado</option>
+            @for (grade of grades(); track grade.id) {
+              <option [ngValue]="grade.id">{{ grade.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Ano academico *</span>
+          <select formControlName="academicYearId">
+            <option [ngValue]="null">Seleccionar ano</option>
+            @for (year of academicYears(); track year.id) {
+              <option [ngValue]="year.id">{{ year.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Movimiento *</span>
+          <select formControlName="movementType">
+            <option value="promotion">Promocion</option>
+            <option value="repetition">Repitencia</option>
+            <option value="transfer">Traslado</option>
+            <option value="withdrawal">Retiro</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Fecha *</span>
+          <input type="date" formControlName="changeDate">
+        </label>
+
+        <label class="field">
+          <span>Autorizado por</span>
+          <input type="number" formControlName="authorizedBy" placeholder="ID de usuario">
+        </label>
+
+        <label class="field field--wide">
+          <span>Motivo</span>
+          <textarea rows="3" formControlName="reason" placeholder="Motivo del movimiento"></textarea>
+        </label>
+      </div>
+
+      <footer class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="saving()">
+          <lucide-icon [img]="CheckCircle" [size]="18"></lucide-icon>
+          {{ saving() ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </footer>
+    </form>
+  </div>
+}

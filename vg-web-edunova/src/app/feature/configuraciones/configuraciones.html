@@ -1,0 +1,286 @@
+<div class="control">
+  <header class="control__topbar">
+    <div class="control__brand">
+      <div class="control__brand-icon"><lucide-icon name="settings" [size]="22"></lucide-icon></div>
+      <div>
+        <h1>Configuracion institucional</h1>
+        <span class="control__subtitle">Preferencias y datos de la institucion</span>
+      </div>
+    </div>
+    <button type="button" class="btn btn--primary control__refresh" (click)="cargar()">Actualizar</button>
+  </header>
+
+  <div class="control__layout">
+    <aside class="control__sidebar">
+      <div class="side-title">
+        <div class="side-title__icon"><lucide-icon name="settings" [size]="16"></lucide-icon></div>
+        <strong>Configuracion</strong>
+      </div>
+
+      <div class="side-group">
+        <span>Identidad</span>
+        <button type="button" class="side-item" [class.side-item--active]="seccion() === 'cuenta'" (click)="setSeccion('cuenta')">
+          <lucide-icon name="user" [size]="18"></lucide-icon>
+          <div><strong>Mi cuenta</strong><small>Informacion operativa</small></div>
+        </button>
+        <button type="button" class="side-item" [class.side-item--active]="seccion() === 'institucion'" (click)="setSeccion('institucion')">
+          <lucide-icon name="building" [size]="18"></lucide-icon>
+          <div><strong>Institucion</strong><small>Datos de la sede y reglas</small></div>
+        </button>
+      </div>
+
+      <div class="side-group">
+        <span>Sistema</span>
+        <button type="button" class="side-item" [class.side-item--active]="seccion() === 'apariencia'" (click)="setSeccion('apariencia')">
+          <lucide-icon name="settings" [size]="18"></lucide-icon>
+          <div><strong>Apariencia</strong><small>Colores y modo visual</small></div>
+        </button>
+      </div>
+
+      <div class="side-group">
+        <span>Privacidad</span>
+        <button type="button" class="side-item" [class.side-item--active]="seccion() === 'seguridad'" (click)="setSeccion('seguridad')">
+          <lucide-icon name="shield" [size]="18"></lucide-icon>
+          <div><strong>Seguridad</strong><small>Alertas y acceso padres</small></div>
+        </button>
+      </div>
+
+      <div class="config-list">
+        <div class="config-list__head">
+          <span>Configuraciones</span>
+          @if (isSuperAdmin()) {
+            <button type="button" (click)="crearNuevaConfiguracion()" title="Nueva configuracion">
+              <lucide-icon name="plus" [size]="15"></lucide-icon>
+            </button>
+          }
+        </div>
+        <div class="config-list__search">
+          <lucide-icon name="search" [size]="14"></lucide-icon>
+          <input placeholder="Buscar sede" (input)="setBusqueda($event)" />
+        </div>
+        <div class="config-list__items">
+          @for (config of filtradas(); track config.institucionId) {
+            <button type="button" class="config-chip" [class.config-chip--active]="editando()?.institucionId === config.institucionId" (click)="seleccionarConfiguracion(config)">
+              <span [style.background]="config.temaColorPrimario || '#165EF0'"></span>
+              <div>
+                <strong>{{ nombreInstitucion(config.institucionId) || 'Institucion no cargada' }}</strong>
+                <small>{{ detalleInstitucion(config.institucionId) || 'Sin datos institucionales' }}</small>
+              </div>
+            </button>
+          } @empty {
+            <div class="config-empty">{{ errorCarga() || (cargando() ? 'Cargando...' : 'Sin configuraciones') }}</div>
+          }
+        </div>
+      </div>
+
+      <div class="plan-box">
+        <span>Institucion seleccionada</span>
+        <strong>{{ institucionSeleccionada()?.nombre || 'Sin seleccion' }}</strong>
+        <small>{{ detalleInstitucion(institucionActivaId()) || estadoInstitucion(institucionActivaId()) || 'Selecciona una institucion' }}</small>
+      </div>
+    </aside>
+
+    <main class="control__panel">
+      <div class="panel-head">
+        <h2>
+          @switch (seccion()) {
+            @case ('cuenta') { Mi Cuenta }
+            @case ('institucion') { Institucion }
+            @case ('apariencia') { Apariencia Visual }
+            @case ('seguridad') { Seguridad y Privacidad }
+          }
+        </h2>
+        <div class="panel-actions">
+          <button type="button" class="btn btn--muted" [disabled]="guardando()" (click)="descartar()">Descartar</button>
+          <button type="button" class="btn btn--primary" [disabled]="guardando()" (click)="onButtonClick()">
+            {{ seccion() === 'seguridad' ? (guardando() ? 'Guardando...' : 'Guardar cambios') : 'Siguiente' }}
+          </button>
+        </div>
+      </div>
+
+        <form class="panel-body">
+          <section class="section section--narrow" [formGroup]="form" [ngClass]="{ 'is-hidden': seccion() !== 'cuenta' }">
+            <div class="profile-row">
+              <div class="avatar" [style.background]="form.get('temaColorPrimario')?.value || '#165EF0'">{{ inicialesInstitucion() || '--' }}</div>
+              <div>
+                <h3>{{ institucionSeleccionada()?.nombre || 'Sin institución seleccionada' }}</h3>
+                <p>{{ detalleInstitucion(form.get('institucionId')?.value) || 'Sin datos institucionales' }}</p>
+              </div>
+              <div class="badges">
+                @if (estadoInstitucion(form.get('institucionId')?.value)) {
+                  <span>{{ estadoInstitucion(form.get('institucionId')?.value) }}</span>
+                }
+              </div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <lucide-icon name="mail" [size]="16"></lucide-icon>
+                  <span>{{ usuarioActual()?.email || 'Sin email' }}</span>
+                </div>
+                <div class="info-item">
+                  <lucide-icon name="phone" [size]="16"></lucide-icon>
+                  <span>{{ usuarioActual()?.telefono || 'Sin teléfono' }}</span>
+                </div>
+                <div class="info-item">
+                  <lucide-icon name="building" [size]="16"></lucide-icon>
+                  <span>{{ institucionSeleccionada()?.email || '' }}</span>
+                </div>
+                <div class="info-item">
+                  <lucide-icon name="phone" [size]="16"></lucide-icon>
+                  <span>{{ institucionSeleccionada()?.telefono || '' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="divider"></div>
+          </section>
+
+        <section class="section section--narrow" [formGroup]="form" [ngClass]="{ 'is-hidden': seccion() !== 'institucion' }">
+          <div class="section-title">
+            <div><h3>Estructura institucional</h3><p>Configuracion tecnica de la sede administrativa.</p></div>
+            @if (estadoInstitucion(form.get('institucionId')?.value)) {
+              <span class="version-pill">{{ estadoInstitucion(form.get('institucionId')?.value) }}</span>
+            }
+          </div>
+          <div class="divider"></div>
+          
+          <div class="field-grid">
+            <div class="field field--full">
+              <span><lucide-icon name="building" [size]="14"></lucide-icon> Institucion</span>
+              @if (isSuperAdmin()) {
+                <select formControlName="institucionId" (change)="seleccionarInstitucionDesdeFormulario()">
+                  @for (inst of institucionesDisponibles(); track inst.id) { <option [ngValue]="inst.id">{{ inst.nombre }}</option> }
+                </select>
+              } @else {
+                <div class="readonly-field">
+                  {{ institucionSeleccionada()?.nombre || institucionesDisponibles()[0]?.nombre || 'Mi Institución' }}
+                </div>
+              }
+            </div>
+
+            <label class="field">
+              <span><lucide-icon name="clock" [size]="14"></lucide-icon> Horario inicio clases</span>
+              <input type="time" formControlName="horarioInicioClases" />
+            </label>
+            <label class="field">
+              <span><lucide-icon name="clock" [size]="14"></lucide-icon> Horario fin clases</span>
+              <input type="time" formControlName="horarioFinClases" />
+            </label>
+
+            <div class="field field--full">
+              <span><lucide-icon name="calendar" [size]="14"></lucide-icon> Días laborables</span>
+              <div class="day-chips">
+                <button *ngFor="let d of DIAS_SEMANA" type="button" class="day-chip" [class.day-chip--active]="isDiaSeleccionado(d.key)" (click)="toggleDia(d.key)">
+                  {{ d.label }}
+                </button>
+              </div>
+            </div>
+
+            <label class="field">
+              <span><lucide-icon name="layers" [size]="14"></lucide-icon> Escala de calificación (ID)</span>
+              <input type="number" formControlName="escalaCalificacionId" min="1" placeholder="Ej: 1" />
+            </label>
+
+            <label class="field">
+              <span><lucide-icon name="database" [size]="14"></lucide-icon> Mantener registros (años)</span>
+              <input type="number" formControlName="mantenerRegistrosAnos" min="1" max="50" placeholder="Ej: 5" />
+            </label>
+
+            <label class="field">
+              <span><lucide-icon name="globe" [size]="14"></lucide-icon> Idioma principal</span>
+              <select formControlName="idiomaPrincipal">
+                <option value="es">Español</option>
+                <option value="es-PE">Español (Perú)</option>
+                <option value="en">Inglés</option>
+                <option value="pt">Portugués</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span><lucide-icon name="clock" [size]="14"></lucide-icon> Zona horaria</span>
+              <select formControlName="zonaHoraria">
+                <option value="America/Lima">America/Lima (UTC-5)</option>
+                <option value="America/Bogota">America/Bogota (UTC-5)</option>
+                <option value="America/Santiago">America/Santiago (UTC-4)</option>
+                <option value="America/Buenos_Aires">America/Buenos Aires (UTC-3)</option>
+                <option value="America/Mexico_City">America/Mexico City (UTC-6)</option>
+                <option value="UTC">UTC</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span><lucide-icon name="dollar-sign" [size]="14"></lucide-icon> Moneda</span>
+              <select formControlName="moneda">
+                <option value="PEN">PEN — Sol peruano</option>
+                <option value="USD">USD — Dólar</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="COP">COP — Peso colombiano</option>
+                <option value="MXN">MXN — Peso mexicano</option>
+                <option value="ARS">ARS — Peso argentino</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="section section--narrow" [formGroup]="form" [ngClass]="{ 'is-hidden': seccion() !== 'apariencia' }">
+          <div class="section-title"><div><h3>Identidad visual</h3><p>Valores guardados en configuracion institucional.</p></div></div>
+          <div class="divider"></div>
+          <div class="palette-box">
+            <span>Color primario</span>
+            <div class="palette-row">
+              @for (color of paleta; track color) {
+                <button type="button" class="swatch" [class.swatch--active]="form.get('temaColorPrimario')?.value === color" [style.background]="color" (click)="seleccionarColor(color)">
+                  @if (form.get('temaColorPrimario')?.value === color) { <lucide-icon name="check" [size]="22"></lucide-icon> }
+                </button>
+              }
+              <label class="swatch swatch--custom">
+                <input type="color" formControlName="temaColorPrimario" />
+                <lucide-icon name="plus" [size]="20"></lucide-icon>
+              </label>
+              <label class="field field--color"><span>Color secundario</span><input type="color" formControlName="temaColorSecundario" /></label>
+            </div>
+          </div>
+          <label class="field"><span><lucide-icon name="building" [size]="14"></lucide-icon> Logo URL</span><input formControlName="logoUrl" /></label>
+        </section>
+
+        <section class="section section--narrow" [formGroup]="form" [ngClass]="{ 'is-hidden': seccion() !== 'seguridad' }">
+          <div class="section-title"><div><h3>Seguridad y privacidad</h3><p>Permisos y notificaciones guardadas en configuracion.</p></div></div>
+          <div class="divider"></div>
+          <div class="security-box">
+            <label class="field"><span>Umbral de calificacion baja</span><input type="number" formControlName="umbralCalificacionBaja" /></label>
+          </div>
+          <div class="toggle-list">
+            <button type="button" class="toggle-item" (click)="toggle('permitirRegistroPadres')">
+              <lucide-icon name="users" [size]="19"></lucide-icon>
+              <div><strong>Registro de padres</strong><span>Permitir creacion de accesos familiares.</span></div>
+              <i [class.is-on]="form.get('permitirRegistroPadres')?.value"></i>
+            </button>
+            <button type="button" class="toggle-item" (click)="toggle('padresVenCalificaciones')">
+              <lucide-icon name="book-open" [size]="19"></lucide-icon>
+              <div><strong>Padres ven calificaciones</strong><span>Habilita consulta academica familiar.</span></div>
+              <i [class.is-on]="form.get('padresVenCalificaciones')?.value"></i>
+            </button>
+            <button type="button" class="toggle-item" (click)="toggle('padresVenAsistencia')">
+              <lucide-icon name="calendar" [size]="19"></lucide-icon>
+              <div><strong>Padres ven asistencia</strong><span>Mostrar registro de asistencia.</span></div>
+              <i [class.is-on]="form.get('padresVenAsistencia')?.value"></i>
+            </button>
+            <button type="button" class="toggle-item" (click)="toggle('padresVenTareas')">
+              <lucide-icon name="check-square" [size]="19"></lucide-icon>
+              <div><strong>Padres ven tareas</strong><span>Mostrar tareas y actividades.</span></div>
+              <i [class.is-on]="form.get('padresVenTareas')?.value"></i>
+            </button>
+            <button type="button" class="toggle-item" (click)="toggle('notificacionInasistencia')">
+              <lucide-icon name="bell" [size]="19"></lucide-icon>
+              <div><strong>Alertas de inasistencia</strong><span>Notificar ausencias automaticamente.</span></div>
+              <i [class.is-on]="form.get('notificacionInasistencia')?.value"></i>
+            </button>
+            <button type="button" class="toggle-item" (click)="toggle('notificacionCalificacionBaja')">
+              <lucide-icon name="alert-triangle" [size]="19"></lucide-icon>
+              <div><strong>Alerta por calificacion baja</strong><span>Notificar cuando baje del umbral.</span></div>
+              <i [class.is-on]="form.get('notificacionCalificacionBaja')?.value"></i>
+            </button>
+          </div>
+        </section>
+      </form>
+    </main>
+  </div>
+</div>

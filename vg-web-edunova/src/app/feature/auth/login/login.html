@@ -1,0 +1,136 @@
+<div class="login-page">
+  <section class="login-left" aria-label="Presentacion EduNova">
+    <div class="login-left__content">
+      <div class="login-left__badge">
+        <lucide-icon name="GraduationCap"></lucide-icon>
+      </div>
+
+      <h1 class="login-left__title">
+        Transformando la
+        <span>Educación Digital</span>
+      </h1>
+
+      <p class="login-left__subtitle">
+        Plataforma integral para la gestión académica, seguimiento de estudiantes y comunicación institucional de EduNova.
+      </p>
+
+      <div class="login-left__pill" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="login-right" aria-label="Inicio de sesion">
+    <div class="login-right__grid" aria-hidden="true"></div>
+    <div class="login-right__glow" aria-hidden="true"></div>
+
+    <div class="login-right__container">
+      <div class="brand-header">
+        <div class="brand-header__logo">
+          <lucide-icon name="GraduationCap"></lucide-icon>
+        </div>
+        <span class="brand-header__name">EduNova</span>
+      </div>
+
+      <div class="welcome-section">
+        <h2 class="welcome-section__title">Bienvenido de <span>vuelta</span></h2>
+        <p class="welcome-section__subtitle">Ingresa tus credenciales para continuar</p>
+      </div>
+
+      <div class="login-card">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form" autocomplete="on">
+          <div class="form-group">
+            <label for="email" class="form-group__label">Correo electrónico</label>
+            <div class="input-container">
+              <div class="input-container__icon">
+                <lucide-icon name="Mail"></lucide-icon>
+              </div>
+              <input
+                id="email"
+                name="edunova-login-email"
+                type="email"
+                formControlName="email"
+                autocomplete="username"
+                spellcheck="false"
+                placeholder="usuario@institución.edu"
+                class="input-container__input"
+                [class.input-container__input--error]="form.get('email')?.invalid && form.get('email')?.touched"
+              />
+            </div>
+            @if (form.get('email')?.invalid && form.get('email')?.touched) {
+              <p class="error-text">Por favor ingresa un correo electrónico válido.</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__header">
+              <label for="contrasena" class="form-group__label">Contraseña</label>
+              <a routerLink="/auth/forgot-password" class="form-group__link">¿Olvidaste tu acceso?</a>
+            </div>
+            <div class="input-container">
+              <div class="input-container__icon">
+                <lucide-icon name="Lock"></lucide-icon>
+              </div>
+              <input
+                id="contrasena"
+                name="edunova-login-password"
+                [type]="verContrasena() ? 'text' : 'password'"
+                formControlName="contrasena"
+                autocomplete="current-password"
+                spellcheck="false"
+                placeholder="••••••••••"
+                class="input-container__input"
+                [class.input-container__input--error]="form.get('contrasena')?.invalid && form.get('contrasena')?.touched"
+              />
+              <button
+                type="button"
+                (click)="toggleContrasena()"
+                class="input-container__toggle-btn"
+                aria-label="Mostrar u ocultar contraseña"
+              >
+                <lucide-icon [name]="verContrasena() ? 'EyeOff' : 'Eye'"></lucide-icon>
+              </button>
+            </div>
+            @if (form.get('contrasena')?.invalid && form.get('contrasena')?.touched) {
+              <p class="error-text">La contraseña es obligatoria.</p>
+            }
+          </div>
+
+          <label class="remember-checkbox">
+            <input type="checkbox" [checked]="recordarEmail()" (change)="toggleRecordar()" />
+            <span class="remember-checkbox__checkmark"></span>
+            Recordar mi correo
+          </label>
+
+          <button type="submit" [disabled]="form.invalid || cargando()" class="btn-primary">
+            @if (cargando()) {
+              <svg class="btn-primary__spinner" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" stroke="currentColor"></circle>
+                <path
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span>Verificando...</span>
+            } @else {
+              <span>Iniciar sesión</span>
+              <span class="btn-primary__arrow" aria-hidden="true">→</span>
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="footer-security">
+      <div class="footer-security__item">
+        <lucide-icon name="LockKeyhole"></lucide-icon>
+        <span>SSL 256-bit</span>
+      </div>
+      <span class="footer-security__divider">|</span>
+      <div class="footer-security__item">
+        <lucide-icon name="ShieldCheck"></lucide-icon>
+        <span>Datos protegidos</span>
+      </div>
+      <span class="footer-security__divider">|</span>
+      <span>© 2025 EduNova</span>
+    </div>
+  </section>
+</div>

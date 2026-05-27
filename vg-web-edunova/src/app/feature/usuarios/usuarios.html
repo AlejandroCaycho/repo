@@ -1,0 +1,608 @@
+<div class="usuarios">
+
+  <header class="usuarios__header">
+    <div class="usuarios__titulo">
+      <div class="usuarios__titulo-icono-bg"><lucide-icon name="users" [size]="20"></lucide-icon></div>
+      <div>
+        <h1>Gestión de Usuarios</h1>
+        <span class="usuarios__subtitulo">Administración de accesos y perfiles</span>
+      </div>
+    </div>
+    <button class="btn btn--primario" (click)="abrirModal()">
+      + NUEVO USUARIO
+    </button>
+  </header>
+
+  <div class="usuarios__body">
+    <div class="usuarios__stats">
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Total Usuarios</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ usuarios().length }}</span>
+            <span class="stat-card__pill stat-card__pill--blue">Registrados</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--blue">
+          <lucide-icon name="users" [size]="20"></lucide-icon>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Estado Actual</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalActivos() }}</span>
+            <span class="stat-card__pill stat-card__pill--blue">Activos</span>
+            <span style="font-size: 1.2rem; font-weight: 300; color: #cbd5e1;">/</span>
+            <span class="stat-card__valor" style="color: #64748b;">{{ totalInactivos() }}</span>
+            <span class="stat-card__pill" style="background: #f1f5f9; color: #64748b;">Inactivos</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--green">
+          <lucide-icon name="user-check" [size]="20"></lucide-icon>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Eliminados</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalEliminados() }}</span>
+            <span class="stat-card__pill" style="background: #fef2f2; color: #dc2626;">Baja</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--orange">
+          <lucide-icon name="user-x" [size]="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+    <div class="usuarios__controles">
+      <div style="display:flex; gap:12px; align-items:center; flex:1;">
+        <div class="buscador">
+          <lucide-icon name="search" class="buscador__icono" [size]="16"></lucide-icon>
+          <input type="text" placeholder="BUSCAR USUARIO..." class="buscador__input" (input)="setBusqueda($event)" />
+        </div>
+        <div class="vista-toggle">
+          <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'lista'"
+            (click)="setVista('lista')" title="Vista lista">
+            <lucide-icon name="list" [size]="16"></lucide-icon>
+          </button>
+          <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'grilla'"
+            (click)="setVista('grilla')" title="Vista grilla">
+            <lucide-icon name="layout-grid" [size]="16"></lucide-icon>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <div style="position: relative;">
+          <button class="btn btn--outline" (click)="dropdownInstAbierto.set(!dropdownInstAbierto())"
+            style="width: 220px; justify-content: space-between; display: flex;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <lucide-icon name="building" [size]="16"></lucide-icon>
+              {{ textoFiltroInst() }}
+            </div>
+            <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+          </button>
+
+          @if (dropdownInstAbierto()) {
+          <div class="dropdown-overlay" (click)="dropdownInstAbierto.set(false)"></div>
+          <div class="dropdown-menu" style="width: 220px;">
+            <button class="dropdown-item" [class.dropdown-item--activo]="institucionFiltro() === 'todas'"
+              (click)="seleccionarFiltroInst('todas')">
+              <lucide-icon name="globe" [size]="16"></lucide-icon> Todas las sedes
+            </button>
+            @for (inst of instituciones(); track inst.id) {
+            <button class="dropdown-item" [class.dropdown-item--activo]="institucionFiltro() === inst.id"
+              (click)="seleccionarFiltroInst(inst.id)">
+              <lucide-icon name="building" [size]="16"></lucide-icon> {{ inst.nombre }}
+            </button>
+            }
+          </div>
+          }
+        </div>
+
+        <div style="position: relative;">
+          <button class="btn btn--outline" (click)="dropdownEstadoAbierto.set(!dropdownEstadoAbierto())"
+            style="width: 180px; justify-content: space-between; display: flex;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <lucide-icon name="filter" [size]="16"></lucide-icon>
+              {{ textoFiltroEstado() }}
+            </div>
+            <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+          </button>
+
+          @if (dropdownEstadoAbierto()) {
+          <div class="dropdown-overlay" (click)="dropdownEstadoAbierto.set(false)"></div>
+          <div class="dropdown-menu" style="width: 180px;">
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'todas'"
+              (click)="seleccionarFiltroEstado('todas')">Ver Todos</button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'activa'"
+              (click)="seleccionarFiltroEstado('activa')">Solo Activos</button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'inactiva'"
+              (click)="seleccionarFiltroEstado('inactiva')">Solo Inactivos</button>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (cargando()) {
+    <div class="contenido-wrapper">
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>
+                <div class="skeleton-box" style="width: 150px; height: 12px;"></div>
+              </th>
+              <th>
+                <div class="skeleton-box" style="width: 120px; height: 12px;"></div>
+              </th>
+              <th>
+                <div class="skeleton-box" style="width: 80px; height: 12px;"></div>
+              </th>
+              <th>
+                <div class="skeleton-box" style="width: 80px; height: 12px;"></div>
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of [1,2,3,4,5,6]; track i) {
+            <tr class="tabla__fila">
+              <td>
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div class="skeleton-box" style="width: 38px; height: 38px; border-radius: 50%;"></div>
+                  <div style="flex:1;">
+                    <div class="skeleton-box" style="width: 60%; height: 14px; margin-bottom: 6px;"></div>
+                    <div class="skeleton-box" style="width: 40%; height: 10px;"></div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="skeleton-box" style="width: 70%; height: 12px;"></div>
+              </td>
+              <td>
+                <div class="skeleton-box" style="width: 60px; height: 12px;"></div>
+              </td>
+              <td>
+                <div class="skeleton-box" style="width: 80px; height: 20px; border-radius: 8px;"></div>
+              </td>
+              <td>
+                <div class="skeleton-box" style="width: 100px; height: 32px; float: right;"></div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    } @else {
+    <div class="contenido-wrapper">
+
+      @if (vistaMode() === 'lista') {
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Usuario / Email</th>
+              <th>Institución Asignada</th>
+              <th>Teléfono</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of filtradosPaginados(); track u.uuid) {
+            <tr class="tabla__fila">
+              <td>
+                <div class="user-info">
+                  <div class="user-info__avatar">
+                    @if (getFotoUrl(u); as fotoUrl) {
+                    <img [src]="fotoUrl" class="user-info__avatar-img" alt="" />
+                    } @else {
+                    {{ u.nombre.charAt(0).toUpperCase() }}
+                    }
+                  </div>
+                  <div>
+                    <div class="user-info__nombre">{{ u.nombre }}</div>
+                    <div class="user-info__email">{{ u.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="tabla__sub">{{ nombreInstitucion(u.institucionId) }}</div>
+              </td>
+              <td>
+                <div class="tabla__sub">{{ u.telefono ?? '—' }}</div>
+              </td>
+              <td>
+                @if (esEliminado(u)) {
+                <span class="etiqueta-estado etiqueta-estado--eliminado">ELIMINADO</span>
+                } @else {
+                <span class="etiqueta-estado" [class.etiqueta-estado--activo]="esActiva(u)"
+                  [class.etiqueta-estado--inactivo]="!esActiva(u)">
+                  {{ esActiva(u) ? 'ACTIVO' : 'INACTIVO' }}
+                </span>
+                }
+              </td>
+              <td>
+                <div class="acciones">
+                  @if (!esEliminado(u)) {
+                  <button class="btn-icono" (click)="verDetalle(u)" title="Ver Detalle">
+                    <lucide-icon name="eye" [size]="16"></lucide-icon>
+                  </button>
+                  <button class="btn-icono" (click)="abrirModalRoles(u)" title="Asignar Roles">
+                    <lucide-icon name="shield" [size]="16"></lucide-icon>
+                  </button>
+                  <button class="btn-icono" (click)="abrirModal(u)" title="Editar">
+                    <lucide-icon name="edit" [size]="16"></lucide-icon>
+                  </button>
+                  <button class="btn-icono" (click)="toggleEstado(u)" [title]="esActiva(u) ? 'Desactivar' : 'Activar'">
+                    <lucide-icon name="power" [size]="16"
+                      [style.color]="esActiva(u) ? '#ef4444' : '#10b981'"></lucide-icon>
+                  </button>
+                  <button class="btn-icono btn-icono--peligro" (click)="eliminar(u.uuid)" title="Eliminar">
+                    <lucide-icon name="trash" [size]="16"></lucide-icon>
+                  </button>
+                  } @else {
+                  <button class="btn-icono" (click)="toggleEstado(u)" title="Restaurar / Activar"
+                    style="color: #10b981;">
+                    <lucide-icon name="rotate-ccw" [size]="16"></lucide-icon>
+                  </button>
+                  }
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="5" class="tabla__vacio">No se encontraron usuarios</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      } @else {
+      <div class="grilla">
+        @for (u of filtradosPaginados(); track u.uuid) {
+        <div class="grilla__card">
+          <div class="grilla__card-icono-bg">
+            @if (getFotoUrl(u); as fotoUrl) {
+            <img [src]="fotoUrl" class="grilla__card-logo" alt="" />
+            } @else {
+            <lucide-icon name="user" [size]="24"></lucide-icon>
+            }
+          </div>
+          <div class="grilla__card-nombre">{{ u.nombre }}</div>
+          <div class="grilla__card-email">{{ u.email }}</div>
+          <div class="grilla__card-mod">{{ u.telefono || 'SIN TELÉFONO' }}</div>
+          <div class="grilla__separator"></div>
+          <div class="grilla__card-institucion">
+            <lucide-icon name="building" [size]="14"></lucide-icon>
+            {{ nombreInstitucion(u.institucionId) }}
+          </div>
+          <div style="margin-top: 4px;">
+            @if (esEliminado(u)) {
+            <span class="etiqueta-estado etiqueta-estado--eliminado">ELIMINADO</span>
+            } @else {
+            <span class="etiqueta-estado" [class.etiqueta-estado--activo]="esActiva(u)"
+              [class.etiqueta-estado--inactivo]="!esActiva(u)">
+              {{ esActiva(u) ? 'ACTIVO' : 'INACTIVO' }}
+            </span>
+            }
+          </div>
+          <div class="grilla__card-acciones">
+            @if (!esEliminado(u)) {
+            <button class="btn-icono" (click)="verDetalle(u)" title="Ver Detalle">
+              <lucide-icon name="eye" [size]="16"></lucide-icon>
+            </button>
+            <button class="btn-icono" (click)="abrirModalRoles(u)" title="Roles">
+              <lucide-icon name="shield" [size]="16"></lucide-icon>
+            </button>
+            <button class="btn-icono" (click)="abrirModal(u)" title="Editar">
+              <lucide-icon name="edit" [size]="16"></lucide-icon>
+            </button>
+            <button class="btn-icono btn-icono--peligro" (click)="eliminar(u.uuid)" title="Eliminar">
+              <lucide-icon name="trash" [size]="16"></lucide-icon>
+            </button>
+            } @else {
+            <button class="btn-icono" (click)="toggleEstado(u)" title="Restaurar" style="color: #10b981;">
+              <lucide-icon name="rotate-ccw" [size]="16"></lucide-icon>
+            </button>
+            }
+          </div>
+        </div>
+        } @empty {
+        <p class="usuarios__cargando">Sin resultados</p>
+        }
+      </div>
+      }
+
+      <div class="paginacion">
+        <div class="paginacion__info">
+          <span>PÁGINA: {{ paginaActual() }} DE {{ totalPaginas() }}</span>
+          <div class="paginacion__barra">
+            <div class="paginacion__progreso" [style.width.%]="(paginaActual() / (totalPaginas() || 1)) * 100"></div>
+          </div>
+        </div>
+        <div class="paginacion__controles">
+          <button class="btn-icono" (click)="cambiarPagina(-1)" [disabled]="paginaActual() === 1"
+            [style.opacity]="paginaActual() === 1 ? '0.5' : '1'">
+            <lucide-icon name="chevron-left" [size]="16"></lucide-icon>
+          </button>
+          <button class="btn-paginacion btn-paginacion--activo">{{ paginaActual() }}</button>
+          <button class="btn-icono" (click)="cambiarPagina(1)" [disabled]="paginaActual() === totalPaginas()"
+            [style.opacity]="paginaActual() === totalPaginas() ? '0.5' : '1'">
+            <lucide-icon name="chevron-right" [size]="16"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</div>
+
+@if (mostrarModal()) {
+<div class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal__header">
+      <div class="modal__titulo">
+        <div
+          style="width: 32px; height: 32px; background: #E9F0FE; color: #165EF0; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 8px;">
+          <lucide-icon [name]="editando() ? 'edit' : 'user-plus'" [size]="18"></lucide-icon>
+        </div>
+        <div>
+          <strong>{{ editando() ? 'Editar Usuario' : 'Nuevo Usuario' }}</strong>
+          <span class="modal__subtitulo">REGISTRO DE ACCESO</span>
+        </div>
+      </div>
+      <button class="modal__cerrar" (click)="cerrarModal()">
+        <lucide-icon name="x" [size]="18"></lucide-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="modal__body">
+      <div class="modal__foto-section">
+        <div class="foto-upload" (click)="fotoInput.click()">
+          @if (fotoPreview) {
+          <div class="foto-upload__preview">
+            <img [src]="fotoPreview" alt="Vista previa" />
+            <div class="foto-upload__overlay">
+              <lucide-icon name="camera" [size]="20"></lucide-icon>
+              <span>Cambiar</span>
+            </div>
+          </div>
+          <button type="button" class="foto-upload__remove" (click)="quitarFoto(); $event.stopPropagation()">
+            <lucide-icon name="x" [size]="16"></lucide-icon>
+          </button>
+          } @else {
+          <div class="foto-upload__placeholder">
+            <lucide-icon name="camera" [size]="28"></lucide-icon>
+            <span>Agregar foto</span>
+          </div>
+          }
+          <input #fotoInput type="file" accept="image/jpeg,image/png,image/gif,image/webp"
+            (change)="onFotoSeleccionado($event)" style="display:none" />
+        </div>
+      </div>
+
+      <div class="campo-fila">
+        <div class="campo" style="flex: 2;">
+          <label>Nombre Completo *</label>
+          <input type="text" formControlName="nombre" placeholder="Ej. Juan Pérez" />
+        </div>
+        <div class="campo">
+          <label>Teléfono</label>
+          <input type="text" formControlName="telefono" placeholder="Ej. 987654321" />
+        </div>
+      </div>
+
+      <div class="campo-fila">
+        <div class="campo">
+          <label>Correo Electrónico *</label>
+          <input type="email" formControlName="email" placeholder="juan@ejemplo.com" />
+        </div>
+        <div class="campo" style="position: relative;">
+          <label>Sede / Institución *</label>
+          <button type="button" class="btn-select" (click)="dropdownModalAbierto.set(!dropdownModalAbierto())">
+            <span>{{ nombreInstitucion(form.get('institucionId')?.value) || 'Seleccionar sede' }}</span>
+            <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+          </button>
+
+          @if (dropdownModalAbierto()) {
+          <div class="dropdown-overlay" (click)="dropdownModalAbierto.set(false)"
+            style="z-index: 2001; background: transparent;"></div>
+          <div class="dropdown-menu"
+            style="width: 100%; top: 100%; z-index: 2002; max-height: 200px; overflow-y: auto;">
+            @for (inst of instituciones(); track inst.id) {
+            <button type="button" class="dropdown-item" (click)="seleccionarInstitucionModal(inst.id)">
+              {{ inst.nombre }}
+            </button>
+            }
+          </div>
+          }
+        </div>
+      </div>
+
+      <div class="campo" style="position: relative;">
+        <label>Contraseña {{ editando() ? '(Dejar en blanco para no cambiar)' : '*' }}</label>
+        <div style="position: relative; width: 100%;">
+          <input [type]="mostrarContrasena() ? 'text' : 'password'" formControlName="contrasena" placeholder="********" autocomplete="new-password" style="padding-right: 40px;" />
+          <button type="button" (click)="mostrarContrasena.set(!mostrarContrasena())" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; display: flex; align-items: center; justify-content: center; padding: 0;">
+            <lucide-icon [name]="mostrarContrasena() ? 'eye-off' : 'eye'" [size]="18"></lucide-icon>
+          </button>
+        </div>
+        @if (campoError('contrasena'); as error) { <small class="campo__error">{{ error }}</small> }
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn btn--secundario" (click)="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn btn--primario" [disabled]="form.invalid">
+          {{ editando() ? 'Guardar Cambios' : 'Registrar Usuario' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}
+
+@if (mostrarModalRoles()) {
+<div class="modal-overlay" (click)="mostrarModalRoles.set(false)">
+  <div class="modal modal--roles" (click)="$event.stopPropagation()">
+    <div class="modal__header">
+      <div class="modal__titulo">
+        <div class="usuarios__titulo-icono-bg"><lucide-icon name="shield" [size]="18"></lucide-icon></div>
+        <div>
+          <strong>Roles: {{ usuarioSeleccionado()?.nombre }}</strong>
+          <span class="modal__subtitulo">Gestión de perfiles de acceso</span>
+        </div>
+      </div>
+      <button class="modal__cerrar" (click)="mostrarModalRoles.set(false)">
+        <lucide-icon name="x" [size]="20"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="modal__body roles-body">
+      <div class="roles-filtros">
+        <button class="roles-filtros__btn" [class.roles-filtros__btn--activo]="filtroRolTipo() === 'todos'"
+          (click)="setFiltroRolTipo('todos')">Todos</button>
+        <button class="roles-filtros__btn" [class.roles-filtros__btn--activo]="filtroRolTipo() === 'sistema'"
+          (click)="setFiltroRolTipo('sistema')">Sistema</button>
+        <button class="roles-filtros__btn" [class.roles-filtros__btn--activo]="filtroRolTipo() === 'custom'"
+          (click)="setFiltroRolTipo('custom')">Personalizados</button>
+      </div>
+
+      <div class="roles-contenedor-fijo">
+        @if (cargandoRoles()) {
+        <div class="roles-cargando">
+          <lucide-icon name="loader-2" class="anim-spin" [size]="24"></lucide-icon>
+          <span>Cargando perfiles...</span>
+        </div>
+        } @else {
+        <div class="roles-grid">
+          @for (rol of rolesFiltradosPaginadosInterno(); track rol.id) {
+          <div class="rol-card" [class.rol-card--asignado]="rolesAsignados().includes(rol.id)"
+            (click)="toggleRol(rol.id)">
+            <div class="rol-card__check-circle">
+              <lucide-icon name="check" [size]="14"></lucide-icon>
+            </div>
+            <div class="rol-card__info">
+              <div class="rol-card__nombre">{{ rol.nombre }}</div>
+              <div class="rol-card__tipo">{{ rol.esSistema ? 'Sistema' : 'Personalizado' }}</div>
+            </div>
+            @if (rol.esSistema) {
+            <div class="rol-card__lock" title="Protegido por el sistema">
+              <lucide-icon name="lock" [size]="12"></lucide-icon>
+            </div>
+            }
+          </div>
+          } @empty {
+          <div class="roles-vacio">No se encontraron roles coincidentes</div>
+          }
+        </div>
+        }
+      </div>
+
+      <div style="height: 54px; min-height: 54px;">
+        @if (totalPaginasRoles() > 1) {
+        <div class="paginacion-roles">
+          <button class="btn-icono" (click)="cambiarPaginaRoles(-1)" [disabled]="paginaActualRoles() === 1"
+            [style.opacity]="paginaActualRoles() === 1 ? '0.5' : '1'">
+            <lucide-icon name="chevron-left" [size]="16"></lucide-icon>
+          </button>
+          <span class="paginacion-roles__texto">Pág. {{ paginaActualRoles() }} de {{ totalPaginasRoles() }}</span>
+          <button class="btn-icono" (click)="cambiarPaginaRoles(1)"
+            [disabled]="paginaActualRoles() === totalPaginasRoles()"
+            [style.opacity]="paginaActualRoles() === totalPaginasRoles() ? '0.5' : '1'">
+            <lucide-icon name="chevron-right" [size]="16"></lucide-icon>
+          </button>
+        </div>
+        }
+      </div>
+
+      <div class="modal__footer">
+        <button class="btn btn--primario" (click)="mostrarModalRoles.set(false)">GUARDAR CAMBIOS</button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+@if (mostrarDetalle()) {
+<div class="rightbar-overlay" (click)="cerrarDetalle()"></div>
+<aside class="rightbar rightbar--open">
+  <div class="rightbar__header">
+    <div class="rightbar__header-info">
+      <div class="rightbar__icono-bg">
+        <lucide-icon name="user" [size]="18"></lucide-icon>
+      </div>
+      <div>
+        <strong>Detalle de Usuario</strong>
+        <span class="rightbar__subtitulo">INFORMACIÓN COMPLETA</span>
+      </div>
+    </div>
+    <button class="modal__cerrar" (click)="cerrarDetalle()">
+      <lucide-icon name="x" [size]="18"></lucide-icon>
+    </button>
+  </div>
+
+  <div class="rightbar__body">
+    @if (detalleUsuario(); as u) {
+    <div class="rightbar__foto-section">
+      @if (getFotoUrl(u); as fotoUrl) {
+      <div class="rightbar__foto">
+        <img [src]="fotoUrl" alt="Foto de perfil" />
+      </div>
+      } @else {
+      <div class="rightbar__foto rightbar__foto--empty">
+        {{ u.nombre.charAt(0).toUpperCase() }}
+      </div>
+      }
+      <div class="rightbar__foto-info">
+        <div class="rightbar__foto-nombre">{{ u.nombre }}</div>
+        <div class="rightbar__foto-email">{{ u.email }}</div>
+      </div>
+    </div>
+
+    <div class="rightbar__seccion">
+      <h3 class="rightbar__seccion-titulo">Información General</h3>
+      <div class="detalle-grid">
+        <div class="detalle-campo">
+          <span class="detalle-campo__label">Teléfono</span>
+          <span class="detalle-campo__valor">{{ u.telefono || '—' }}</span>
+        </div>
+        <div class="detalle-campo">
+          <span class="detalle-campo__label">Institución</span>
+          <span class="detalle-campo__valor">{{ nombreInstitucion(u.institucionId) }}</span>
+        </div>
+        <div class="detalle-campo">
+          <span class="detalle-campo__label">Roles</span>
+          <span class="detalle-campo__valor">
+            @if (cargandoRolesDetalle()) {
+            <span style="color:#94a3b8;">Cargando...</span>
+            } @else if (rolesDelUsuario().length === 0) {
+            <span style="color:#94a3b8;">Sin roles</span>
+            } @else {
+            {{ rolesDelUsuario().join(', ') }}
+            }
+          </span>
+        </div>
+        <div class="detalle-campo">
+          <span class="detalle-campo__label">Último Acceso</span>
+          <span class="detalle-campo__valor">{{ formatearFecha(u.ultimoAcceso) }}</span>
+        </div>
+      </div>
+    </div>
+    }
+
+
+  </div>
+
+  <div class="rightbar__footer">
+    <button type="button" class="btn btn--secundario" (click)="cerrarDetalle()">Cerrar</button>
+    <button type="button" class="btn btn--primario"
+      (click)="cerrarDetalle(); abrirModal(detalleUsuario()!)">Editar</button>
+  </div>
+</aside>
+}

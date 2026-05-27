@@ -1,0 +1,381 @@
+<div class="roles">
+
+  <header class="roles__header">
+    <div class="roles__titulo">
+      <div class="roles__icono-principal"><lucide-icon name="key" [size]="20"></lucide-icon></div>
+      <div>
+        <h1>Gestión de Roles</h1>
+        <span class="roles__subtitulo">Administración de perfiles y seguridad</span>
+      </div>
+    </div>
+    <button class="btn btn--primario" (click)="abrirModal()">
+      + NUEVO ROL
+    </button>
+  </header>
+
+  <div class="roles__body">
+
+    <div class="roles__stats">
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Total Roles</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ roles().length }}</span>
+            <span class="stat-card__pill stat-card__pill--blue">Activos</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--blue">
+          <lucide-icon name="key" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">De Sistema</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ rolesSistema() }}</span>
+            <span class="stat-card__pill stat-card__pill--purple">Protegidos</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--purple">
+          <lucide-icon name="shield" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Personalizados</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ rolesCustom() }}</span>
+            <span class="stat-card__pill stat-card__pill--green">Editables</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--green">
+          <lucide-icon name="user-check" [size]="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="roles__controles">
+      <div style="display:flex; gap:12px; align-items:center; flex:1;">
+        <div class="buscador">
+          <lucide-icon name="search" class="buscador__icono" [size]="16"></lucide-icon>
+          <input type="text" placeholder="BUSCAR ROL..." class="buscador__input" (input)="setBusqueda($event)" />
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <div style="position: relative;">
+          <button class="btn btn--outline" (click)="dropdownAbierto.set(!dropdownAbierto())"
+            style="width: 200px; justify-content: space-between; display: flex;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <lucide-icon name="filter" [size]="16"></lucide-icon>
+              {{ filtro() === 'todos' ? 'Todos los Roles' : (filtro() === 'sistema' ? 'Solo Sistema' : 'Solo Custom') }}
+            </div>
+            <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+          </button>
+
+          @if (dropdownAbierto()) {
+          <div class="dropdown-overlay" (click)="dropdownAbierto.set(false)"
+            style="position: fixed; inset: 0; z-index: 1000;"></div>
+          <div
+            style="position: absolute; top: calc(100% + 8px); right: 0; width: 200px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); display: flex; flex-direction: column; padding: 6px; z-index: 1001;">
+            <button class="dropdown-item" [class.dropdown-item--activo]="filtro() === 'todos'"
+              (click)="setFiltro('todos')">Todos los Roles</button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="filtro() === 'sistema'"
+              (click)="setFiltro('sistema')">Roles de Sistema</button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="filtro() === 'custom'"
+              (click)="setFiltro('custom')">Personalizados</button>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (cargando()) {
+    <div class="contenido-wrapper">
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>
+                <div class="skeleton-box" style="width:140px;height:12px;"></div>
+              </th>
+              <th>
+                <div class="skeleton-box" style="width:200px;height:12px;"></div>
+              </th>
+              <th>
+                <div class="skeleton-box" style="width:70px;height:12px;"></div>
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of [1,2,3,4]; track i) {
+            <tr class="tabla__fila">
+              <td>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div class="skeleton-box" style="width:32px;height:32px;border-radius:8px;"></div>
+                  <div class="skeleton-box" style="width:120px;height:13px;"></div>
+                </div>
+              </td>
+              <td>
+                <div class="skeleton-box" style="width:70%;height:12px;"></div>
+              </td>
+              <td>
+                <div class="skeleton-box" style="width:60px;height:20px;border-radius:8px;"></div>
+              </td>
+              <td>
+                <div class="skeleton-box" style="width:80px;height:32px;float:right;"></div>
+              </td>
+            </tr>
+            }
+            <tr class="tabla__fila tabla__fila--relleno" aria-hidden="true">
+              <td colspan="4"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    } @else {
+    <div class="contenido-wrapper">
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Nombre del Rol</th>
+              <th>Descripción</th>
+              <th>Tipo</th>
+              <th style="text-align:right;padding-right:24px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (rol of filtradosPaginados(); track rol.id) {
+            <tr class="tabla__fila">
+              <td>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div class="rol-icono">
+                    <lucide-icon name="key" [size]="16"></lucide-icon>
+                  </div>
+                  <strong>{{ rol.nombre | uppercase }}</strong>
+                </div>
+              </td>
+              <td><span class="tabla__sub">{{ rol.descripcion || 'Sin descripción' }}</span></td>
+              <td>
+                <span class="etiqueta-tipo" [style.background]="rol.esSistema ? 'rgba(168,85,247,0.1)' : '#f1f5f9'"
+                  [style.color]="rol.esSistema ? '#A855F7' : '#64748b'">
+                  {{ rol.esSistema ? 'SISTEMA' : 'CUSTOM' }}
+                </span>
+              </td>
+              <td>
+                <div class="acciones" style="padding-right:12px;">
+                  <button class="btn-icono" (click)="abrirModalPermisos(rol)" title="Asignar Permisos">
+                    <lucide-icon name="shield" [size]="16"></lucide-icon>
+                  </button>
+                  @if (!rol.esSistema) {
+                  <button class="btn-icono" (click)="abrirModal(rol)" title="Editar">
+                    <lucide-icon name="edit" [size]="16"></lucide-icon>
+                  </button>
+                  }
+                  @if (!rol.esSistema) {
+                  <button class="btn-icono btn-icono--peligro" (click)="eliminar(rol.id)" title="Eliminar">
+                    <lucide-icon name="trash" [size]="16"></lucide-icon>
+                  </button>
+                  }
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="4" class="tabla__vacio">No se encontraron roles</td>
+            </tr>
+            }
+            @for (_ of filasRelleno(); track $index) {
+            <tr class="tabla__fila tabla__fila--relleno" aria-hidden="true">
+              <td colspan="4"></td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="paginacion">
+        <div class="paginacion__info">
+          <span>PÁGINA: {{ paginaActual() }} DE {{ totalPaginas() }}</span>
+          <div class="paginacion__barra">
+            <div class="paginacion__progreso" [style.width.%]="(paginaActual() / (totalPaginas() || 1)) * 100"></div>
+          </div>
+        </div>
+        <div class="paginacion__controles">
+          <button class="btn-icono" (click)="cambiarPagina(-1)" [disabled]="paginaActual() === 1"
+            [style.opacity]="paginaActual() === 1 ? '0.4' : '1'">
+            <lucide-icon name="chevron-left" [size]="16"></lucide-icon>
+          </button>
+          <button class="btn-paginacion btn-paginacion--activo">{{ paginaActual() }}</button>
+          <button class="btn-icono" (click)="cambiarPagina(1)" [disabled]="paginaActual() === totalPaginas()"
+            [style.opacity]="paginaActual() === totalPaginas() ? '0.4' : '1'">
+            <lucide-icon name="chevron-right" [size]="16"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+
+  </div>
+</div>
+
+@if (mostrarModal()) {
+<div class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()" style="width:450px;">
+    <div class="modal__header">
+      <div class="modal__titulo">
+        <div class="roles__icono-principal"><lucide-icon [name]="editando() ? 'edit' : 'plus'"
+            [size]="18"></lucide-icon></div>
+        <div>
+          <strong>{{ editando() ? 'Editar Rol' : 'Nuevo Rol' }}</strong>
+          <span class="modal__subtitulo">CONFIGURACIÓN DE PERFIL</span>
+        </div>
+      </div>
+      <button class="modal__cerrar" (click)="cerrarModal()">
+        <lucide-icon name="x" [size]="20"></lucide-icon>
+      </button>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="modal__body">
+      <div class="campo">
+        <label>Nombre del Rol *</label>
+        <input formControlName="nombre" type="text" placeholder="EJ. ADMINISTRADOR" />
+        @if (campoError('nombre'); as error) { <small class="campo__error">{{ error }}</small> }
+      </div>
+      <div class="campo">
+        <label>Descripción</label>
+        <textarea formControlName="descripcion" rows="3" placeholder="Describe el propósito de este rol..."></textarea>
+        @if (campoError('descripcion'); as error) { <small class="campo__error">{{ error }}</small> }
+      </div>
+      <div class="campo campo--toggle" (click)="form.get('esSistema')?.setValue(!form.get('esSistema')?.value)">
+        <lucide-icon [name]="form.get('esSistema')?.value ? 'check-square' : 'square'" [size]="20"
+          [style.color]="form.get('esSistema')?.value ? '#165EF0' : '#94a3b8'"></lucide-icon>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700;color:#1e293b;">Rol de Sistema</div>
+          <div style="font-size:0.65rem;color:#64748b;">Los roles de sistema son protegidos y tienen permisos base</div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="btn btn--secundario" (click)="cerrarModal()">CANCELAR</button>
+        <button type="submit" class="btn btn--primario" [disabled]="form.invalid">
+          {{ editando() ? 'GUARDAR CAMBIOS' : 'REGISTRAR ROL' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}
+
+@if (mostrarModalPermisos()) {
+<div class="modal-overlay" (click)="cerrarModalPermisos()">
+  <div class="modal" style="width:900px; max-width:95vw; height:90vh; display:flex; flex-direction:column;"
+    (click)="$event.stopPropagation()">
+    <div class="modal__header">
+      <div class="modal__titulo">
+        <div class="roles__icono-principal"><lucide-icon name="shield" [size]="18"></lucide-icon></div>
+        <div>
+          <strong>Permisos: {{ (rolSeleccionado()?.nombre | uppercase) }}</strong>
+          <span class="modal__subtitulo">GESTIÓN DE ACCESOS POR MÓDULO</span>
+        </div>
+      </div>
+      <button class="modal__cerrar" (click)="cerrarModalPermisos()">
+        <lucide-icon name="x" [size]="20"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- CONTENEDOR FILTRO FIJO -->
+    <div style="padding:16px 24px 0 24px; border-bottom:1px solid #f1f5f9; flex-shrink:0;">
+      <div style="margin-bottom:16px; display:flex; align-items:center; gap:12px;">
+        <div style="position:relative; width:300px; max-width:100%;">
+          <button class="btn btn--outline" (click)="dropdownModulosAbierto.set(!dropdownModulosAbierto())"
+            style="width:100%; justify-content:space-between; display:flex;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <lucide-icon name="filter" [size]="16"></lucide-icon>
+              {{ filtroModulo() === 'Todos' ? 'Todos los Módulos' : 'Módulo: ' + filtroModulo() }}
+            </div>
+            <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+          </button>
+          @if (dropdownModulosAbierto()) {
+          <div class="dropdown-overlay" (click)="dropdownModulosAbierto.set(false)"
+            style="position: fixed; inset: 0; z-index: 1000;"></div>
+          <div
+            style="position:absolute; top:calc(100% + 8px); left:0; width:100%; max-height:250px; overflow-y:auto; background:white; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 10px 25px -5px rgba(0,0,0,0.1); display:flex; flex-direction:column; padding:6px; z-index:1001;">
+            @for (mod of modulosDisponibles(); track mod) {
+            <button class="dropdown-item" [class.dropdown-item--activo]="filtroModulo() === mod"
+              (click)="filtroModulo.set(mod); dropdownModulosAbierto.set(false)">
+              {{ mod === 'Todos' ? 'Todos los Módulos' : mod }}
+            </button>
+            }
+          </div>
+          }
+        </div>
+        <button class="btn btn--outline" (click)="asignarTodosPermisos()" style="gap:6px;">
+          <lucide-icon name="check-square" [size]="16"></lucide-icon>
+          ASIGNAR TODOS
+        </button>
+        <button class="btn btn--outline" (click)="limpiarTodosPermisos()" style="gap:6px;">
+          <lucide-icon name="square" [size]="16"></lucide-icon>
+          LIMPIAR TODOS
+        </button>
+      </div>
+    </div>
+
+    <div class="modal__body" style="padding:24px; flex:1; overflow-y:auto;">
+      @if (cargandoPermisos()) {
+      <div class="tabla__vacio" style="padding:32px;">Cargando permisos...</div>
+      } @else {
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        @for (grupo of permisosAgrupadosPaginados(); track grupo[0]) {
+        <div>
+          <div class="permisos-grupo-label">{{ grupo[0] }}</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
+            @for (p of grupo[1]; track p.id) {
+            <div (click)="togglePermiso(p.id)" class="permiso-card"
+              [class.permiso-card--activo]="permisosAsignados().includes(p.id)">
+              <div class="permiso-card__check-circle">
+                <lucide-icon name="check" [size]="14"></lucide-icon>
+              </div>
+              <div class="permiso-card__info">
+                <span class="permiso-card__accion">{{ p.accion }}</span>
+                <span class="permiso-card__desc">{{ p.descripcion || 'Sin descripción' }}</span>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        } @empty {
+        <div class="tabla__vacio" style="padding:32px;">Sin permisos disponibles</div>
+        }
+      </div>
+      }
+    </div>
+    <div class="modal__footer" style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="paginacion" style="border:none;padding:0;margin:0;">
+        <div class="paginacion__info" style="gap:8px;">
+          <span style="font-size:0.7rem;color:#64748b;">PÁGINA: {{ paginaPermisos() }} DE {{ totalPaginasPermisos()
+            }}</span>
+          <div class="paginacion__barra" style="width:100px;">
+            <div class="paginacion__progreso"
+              [style.width.%]="(paginaPermisos() / (totalPaginasPermisos() || 1)) * 100"></div>
+          </div>
+        </div>
+        <div class="paginacion__controles">
+          <button class="btn-icono" (click)="cambiarPaginaPermisos(-1)" [disabled]="paginaPermisos() === 1"
+            [style.opacity]="paginaPermisos() === 1 ? '0.4' : '1'">
+            <lucide-icon name="chevron-left" [size]="16"></lucide-icon>
+          </button>
+          <button class="btn-paginacion btn-paginacion--activo">{{ paginaPermisos() }}</button>
+          <button class="btn-icono" (click)="cambiarPaginaPermisos(1)"
+            [disabled]="paginaPermisos() === totalPaginasPermisos()"
+            [style.opacity]="paginaPermisos() === totalPaginasPermisos() ? '0.4' : '1'">
+            <lucide-icon name="chevron-right" [size]="16"></lucide-icon>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn--primario" (click)="cerrarModalPermisos()">LISTO</button>
+    </div>
+  </div>
+</div>
+}

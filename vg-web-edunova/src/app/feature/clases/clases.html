@@ -1,0 +1,700 @@
+<div class="control">
+  <!-- Topbar -->
+  <header class="control__topbar">
+    <div class="control__brand">
+      <div class="control__brand-icon">
+        <lucide-icon name="graduation-cap" [size]="22"></lucide-icon>
+      </div>
+      <div>
+        <h1>Centro Académico</h1>
+        <span>Administración de estructura y horarios escolares</span>
+      </div>
+    </div>
+    <div class="control__status">
+      <span></span>
+      Edunova Core v1.2
+    </div>
+  </header>
+
+  <!-- Layout Principal -->
+  <div class="control__layout">
+    <!-- Sidebar de Navegación Interna -->
+    <aside class="control__sidebar">
+      <div class="side-title">
+        <div class="side-title__icon">
+          <lucide-icon name="settings" [size]="16"></lucide-icon>
+        </div>
+        <strong>Estructura</strong>
+      </div>
+
+      <div class="side-group">
+        <span>Distribución</span>
+        <button type="button" class="side-item" [class.side-item--active]="seccion() === 'clases'" (click)="setSeccion('clases')">
+          <lucide-icon name="book-open" [size]="18"></lucide-icon>
+          <div>
+            <strong>Clases y Cursos</strong>
+            <small>Carga horaria y docentes</small>
+          </div>
+        </button>
+        <button type="button" class="side-item" [class.side-item--active]="seccion() === 'grados'" (click)="setSeccion('grados')">
+          <lucide-icon name="users" [size]="18"></lucide-icon>
+          <div>
+            <strong>Grados y Secciones</strong>
+            <small>Aulas asignadas y tutores</small>
+          </div>
+        </button>
+      </div>
+
+      <div class="side-group">
+        <span>Infraestructura</span>
+        <button type="button" class="side-item" [class.side-item--active]="seccion() === 'aulas'" (click)="setSeccion('aulas')">
+          <lucide-icon name="building" [size]="18"></lucide-icon>
+          <div>
+            <strong>Aulas y Espacios</strong>
+            <small>Capacidad y bloques</small>
+          </div>
+        </button>
+        <button type="button" class="side-item" [class.side-item--active]="seccion() === 'materias'" (click)="setSeccion('materias')">
+          <lucide-icon name="layers" [size]="18"></lucide-icon>
+          <div>
+            <strong>Materias</strong>
+            <small>Catálogo y áreas lectivas</small>
+          </div>
+        </button>
+      </div>
+
+      <div class="side-group">
+        <span>Planificación</span>
+        <button type="button" class="side-item" [class.side-item--active]="seccion() === 'calendario'" (click)="setSeccion('calendario')">
+          <lucide-icon name="calendar" [size]="18"></lucide-icon>
+          <div>
+            <strong>Año Escolar</strong>
+            <small>Calendario y bimestres</small>
+          </div>
+        </button>
+      </div>
+
+      <div class="plan-box">
+        <span>Sede Activa</span>
+        <strong>{{ institucionNombre() }}</strong>
+        <small style="color: #64748b; font-size: 0.65rem; font-weight: 700;">Datos desde Auth MS</small>
+      </div>
+    </aside>
+
+    <!-- Panel de Contenido -->
+    <main class="control__panel">
+      <!-- Encabezado de Panel -->
+      <div class="panel-head">
+        <h2>
+          @switch (seccion()) {
+            @case ('clases') { Gestión de Clases }
+            @case ('grados') { Grados y Secciones }
+            @case ('aulas') { Aulas y Laboratorios }
+            @case ('materias') { Catálogo de Materias }
+            @case ('calendario') { Períodos y Ciclo Lectivo }
+          }
+        </h2>
+        <div class="panel-actions">
+          @if (seccion() === 'clases') {
+            <select class="filter-select" (change)="onFiltroGradoChange($event)">
+              <option value="">Todos los Grados</option>
+              @for (g of grados(); track g.id) {
+                <option [value]="g.id">{{ g.nombre }} "{{ g.seccion }}"</option>
+              }
+            </select>
+            <select class="filter-select" (change)="onFiltroMateriaChange($event)">
+              <option value="">Todos los Cursos</option>
+              @for (m of materias(); track m.id) {
+                <option [value]="m.id">{{ m.nombre }}</option>
+              }
+            </select>
+          }
+          @if (seccion() === 'grados') {
+            <select class="filter-select" (change)="onFiltroNivelGradoChange($event)">
+              <option value="">Todos los Niveles</option>
+              @for (n of niveles(); track n.id) {
+                <option [value]="n.id">{{ n.nombre }}</option>
+              }
+            </select>
+          }
+          @if (seccion() === 'aulas') {
+            <select class="filter-select" (change)="onFiltroBloqueAulaChange($event)">
+              <option value="">Todos los Bloques</option>
+              @for (b of bloquesUnicos(); track b) {
+                <option [value]="b">{{ b }}</option>
+              }
+            </select>
+          }
+          <div class="search-input-wrapper">
+            <lucide-icon name="search" [size]="14"></lucide-icon>
+            <input type="text" placeholder="Buscar..." [value]="busqueda()" (input)="setBusqueda($event)" />
+          </div>
+          <button type="button" class="btn btn--primary" (click)="abrirCrear()">
+            <lucide-icon name="plus" [size]="15"></lucide-icon>
+            Agregar Nuevo
+          </button>
+        </div>
+      </div>
+
+      <!-- Cuerpo del Panel (Cargando / Listados) -->
+      <div class="panel-body">
+        @if (cargando()) {
+          <div class="loading-container">
+            <div class="shimmer-card skeleton"></div>
+            <div class="shimmer-card skeleton" style="margin-top: 15px;"></div>
+            <div class="shimmer-card skeleton" style="margin-top: 15px;"></div>
+          </div>
+        } @else {
+          <!-- LISTADO: CLASES AGRUPADAS POR CURSO -->
+          @if (seccion() === 'clases') {
+            <div class="grid-cards grid-cards--grouped">
+              @for (group of clasesAgrupadasPorMateria(); track group.materia.id) {
+                <div class="course-card">
+                  <!-- Cabecera de la materia -->
+                  <div class="course-card__header" [style.borderLeftColor]="group.materia.color || '#165EF0'">
+                    <span class="color-dot" [style.background]="group.materia.color || '#165EF0'"></span>
+                    <div class="info">
+                      <h3>{{ group.materia.nombre }}</h3>
+                      <code>{{ group.materia.codigo }}</code>
+                    </div>
+                  </div>
+                  <!-- Cuerpo: Secciones/grados asignados -->
+                  <div class="course-card__body">
+                    @for (c of group.clases; track c.id) {
+                      <div class="section-row">
+                        <div class="section-details">
+                          <div class="row-header">
+                            <span class="grado-name">{{ getGradoNombre(c.gradoId) }}</span>
+                            <span class="badge badge--success" *ngIf="c.modalidad === 'presencial'">{{ c.modalidad }}</span>
+                            <span class="badge badge--danger" *ngIf="c.modalidad !== 'presencial'">{{ c.modalidad }}</span>
+                          </div>
+                          <div class="row-info">
+                            <span><strong>Docente:</strong> {{ c.profesor ? c.profesor.nombres + ' ' + c.profesor.apellidos : 'ID: ' + c.profesorId }}</span>
+                            <span><strong>Aula:</strong> {{ getAulaNombre(c.aulaId) }}</span>
+                          </div>
+                          
+                          <!-- Horarios inline para esta sección -->
+                          <div class="section-horarios" *ngIf="getHorariosDeClase(c.id).length > 0">
+                            @for (h of getHorariosDeClase(c.id); track h.id) {
+                              <span class="horario-pill">
+                                <strong>{{ h.diaSemana | slice:0:3 }}</strong> {{ h.horaInicio | slice:0:5 }}-{{ h.horaFin | slice:0:5 }} ({{ h.tipoHorario }})
+                                <button type="button" class="del-time" (click)="eliminarHorario(h)" title="Remover Horario">&times;</button>
+                              </span>
+                            }
+                          </div>
+                        </div>
+
+                        <!-- Acciones por sección/clase -->
+                        <div class="section-actions">
+                          <button type="button" class="action-btn" (click)="agregarHorario(c)" title="Programar Horario">
+                            <lucide-icon name="calendar" [size]="13"></lucide-icon>
+                          </button>
+                          <button type="button" class="action-btn" (click)="abrirEditar('clase', c)" title="Editar Asignación">
+                            <lucide-icon name="edit" [size]="13"></lucide-icon>
+                          </button>
+                          <button type="button" class="action-btn action-btn--danger" (click)="eliminar('clase', c.id!)" title="Eliminar Asignación">
+                            <lucide-icon name="trash" [size]="13"></lucide-icon>
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-message">No se encontraron asignaciones de clases para el filtro actual.</div>
+              }
+            </div>
+          }
+
+          <!-- LISTADO: GRADOS -->
+          @if (seccion() === 'grados') {
+            @if (gradosFiltrados().length === 0) {
+              <div class="grados-empty">
+                <lucide-icon name="users" [size]="40"></lucide-icon>
+                <p>No se encontraron grados con los filtros aplicados.</p>
+              </div>
+            } @else {
+              <div class="grados-grid">
+                @for (g of gradosFiltrados(); track g.id) {
+                  <div class="grado-card" [class.grado-card--inactive]="!g.activo">
+                    <!-- Nivel badge + acciones -->
+                    <div class="grado-card__top">
+                      <span class="nivel-badge">{{ getNivelNombre(g.nivelId) }}</span>
+                      <div class="grado-card__actions">
+                        <button type="button" (click)="abrirEditar('grado', g)" title="Editar">
+                          <lucide-icon name="edit" [size]="13"></lucide-icon>
+                        </button>
+                        <button type="button" class="btn-delete" (click)="eliminar('grado', g.id!)" title="Eliminar">
+                          <lucide-icon name="trash" [size]="13"></lucide-icon>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Título grado + sección -->
+                    <div class="grado-card__title">
+                      <h3>{{ g.nombre }}</h3>
+                      <span class="seccion-tag">Sección {{ g.seccion }}</span>
+                    </div>
+
+                    <!-- Info chips -->
+                      <div class="grado-card__chips">
+                        <div class="info-chip" title="Tutor">
+                          <lucide-icon name="user" [size]="12"></lucide-icon>
+                          <span>{{ g.tutor ? g.tutor.nombres + ' ' + g.tutor.apellidos : 'Sin tutor' }}</span>
+                        </div>
+                        <div class="info-chip">
+                          <lucide-icon name="building" [size]="12"></lucide-icon>
+                          <span>{{ getAulaNombre(g.aulaId) }}</span>
+                        </div>
+                        <div class="info-chip">
+                          <lucide-icon name="clock" [size]="12"></lucide-icon>
+                          <span>{{ g.turno }}</span>
+                        </div>
+                        <div class="info-chip">
+                          <lucide-icon name="users" [size]="12"></lucide-icon>
+                          <span>{{ g.capacidadMax }} alumnos</span>
+                        </div>
+                      </div>
+
+                    <!-- Footer estado -->
+                    <div class="grado-card__footer">
+                      <span class="estado-pill" [class.estado-pill--active]="g.activo">
+                        <span class="estado-dot"></span>
+                        {{ g.activo ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
+
+          <!-- LISTADO: AULAS -->
+          @if (seccion() === 'aulas') {
+            @if (aulasFiltradas().length === 0) {
+              <div class="empty-message-box">
+                <lucide-icon name="building" [size]="40"></lucide-icon>
+                <p>No se encontraron aulas con los filtros aplicados.</p>
+              </div>
+            } @else {
+              <div class="aulas-grid">
+                @for (a of aulasFiltradas(); track a.id) {
+                  <div class="aula-card" [class.aula-card--occupied]="!a.disponible">
+                    <!-- Top: Badge tipo y acciones -->
+                    <div class="aula-card__top">
+                      <span class="tipo-badge" 
+                            [class.tipo-badge--lab]="a.tipo?.toLowerCase()?.includes('laboratorio')"
+                            [class.tipo-badge--aud]="a.tipo?.toLowerCase()?.includes('auditorio')">
+                        {{ a.tipo || 'Teórica' }}
+                      </span>
+                      <div class="aula-card__actions">
+                        <button type="button" (click)="abrirEditar('aula', a)" title="Editar">
+                          <lucide-icon name="edit" [size]="13"></lucide-icon>
+                        </button>
+                        <button type="button" class="btn-delete" (click)="eliminar('aula', a.id!)" title="Eliminar">
+                          <lucide-icon name="trash" [size]="13"></lucide-icon>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Título -->
+                    <div class="aula-card__title">
+                      <h3>{{ a.nombre }}</h3>
+                      <code>{{ a.codigo || 'S/C' }}</code>
+                    </div>
+
+                    <!-- Metadatos -->
+                    <div class="aula-card__meta">
+                      <div class="meta-item">
+                        <lucide-icon name="map-pin" [size]="12"></lucide-icon>
+                        <span>{{ a.bloque }}, Piso {{ a.piso }}</span>
+                      </div>
+                      <div class="meta-item">
+                        <lucide-icon name="users" [size]="12"></lucide-icon>
+                        <span>{{ a.capacidad }} carpetas</span>
+                      </div>
+                    </div>
+
+                    <!-- Equipamiento resumido si existe -->
+                    @if (a.equipamiento) {
+                      <div class="aula-card__equipamiento" title="{{ a.equipamiento }}">
+                        <lucide-icon name="layers" [size]="11"></lucide-icon>
+                        <span>{{ a.equipamiento }}</span>
+                      </div>
+                    }
+
+                    <!-- Estado footer -->
+                    <div class="aula-card__footer">
+                      <span class="estado-tag" [class.estado-tag--available]="a.disponible">
+                        <span class="estado-dot"></span>
+                        {{ a.disponible ? 'Disponible' : 'Ocupado' }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
+
+          <!-- LISTADO: MATERIAS -->
+          @if (seccion() === 'materias') {
+            <div class="grid-cards grid-cards--three">
+              @for (m of materiasFiltradas(); track m.id) {
+                <div class="materia-card">
+                  <div class="materia-card__header" [style.background]="m.color || '#165EF0'">
+                    <lucide-icon name="layers" [size]="20"></lucide-icon>
+                    <span class="code">{{ m.codigo }}</span>
+                  </div>
+                  <div class="materia-card__body">
+                    <h3>{{ m.nombre }}</h3>
+                    <p class="nivel">{{ getNivelNombre(m.nivelId) }}</p>
+                    <p class="desc">{{ m.descripcion || 'Sin descripción detallada.' }}</p>
+                    <div class="meta">
+                      <span><strong>{{ m.horasSemana }}h</strong> por semana</span>
+                      <span class="badge" [class.badge--success]="m.esObligatoria">{{ m.esObligatoria ? 'Obligatoria' : 'Electiva' }}</span>
+                    </div>
+                  </div>
+                  <div class="materia-card__actions">
+                    <button type="button" (click)="abrirEditar('materia', m)"><lucide-icon name="edit" [size]="14"></lucide-icon> Editar</button>
+                    <button type="button" class="btn-delete" (click)="eliminar('materia', m.id!)"><lucide-icon name="trash" [size]="14"></lucide-icon> Eliminar</button>
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-message">No se encontraron materias registradas.</div>
+              }
+            </div>
+          }
+
+          <!-- LISTADO: CALENDARIO (AÑOS Y PERÍODOS) -->
+          @if (seccion() === 'calendario') {
+            <div class="calendar-layout">
+              <!-- Columna Izquierda: Años Académicos -->
+              <div class="calendar-column">
+                <div class="col-header">
+                  <h3>Años Escolares</h3>
+                </div>
+                <div class="calendar-list">
+                  @for (an of anosFiltrados(); track an.id) {
+                    <div class="year-item" 
+                         [class.year-item--active]="an.activo"
+                         [class.year-item--selected]="anoSeleccionadoId() === an.id"
+                         (click)="seleccionarAno(an.id)"
+                         style="cursor: pointer;">
+                      <div class="info">
+                        <strong>{{ an.nombre }}</strong>
+                        <span>{{ an.fechaInicio | date:'dd/MM/yyyy' }} al {{ an.fechaFin | date:'dd/MM/yyyy' }}</span>
+                      </div>
+                      <div class="actions">
+                        <button type="button" (click)="abrirEditar('ano', an); $event.stopPropagation()" title="Editar"><lucide-icon name="edit" [size]="12"></lucide-icon></button>
+                        <button type="button" class="btn-delete" (click)="eliminar('ano', an.id!); $event.stopPropagation()" title="Eliminar"><lucide-icon name="trash" [size]="12"></lucide-icon></button>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div class="empty-message">Sin ciclos registrados.</div>
+                  }
+                </div>
+              </div>
+
+              <!-- Columna Derecha: Bimestres / Períodos -->
+              <div class="calendar-column">
+                <div class="col-header">
+                  <h3>Períodos Académicos (Bimestres)</h3>
+                  <button type="button" class="btn-add-period" (click)="agregarPeriodo()">+ Bimestre</button>
+                </div>
+                <div class="periods-timeline">
+                  @for (p of periodosFiltrados(); track p.id) {
+                    <div class="period-timeline-card">
+                      <span class="orden-bubble">{{ p.orden }}</span>
+                      <div class="info">
+                        <strong>{{ p.nombre }}</strong>
+                        <small>Ciclo ID: {{ p.anoAcademicoId }} — Tipo: {{ p.tipo }}</small>
+                        <span class="dates">{{ p.fechaInicio | date:'dd/MM/yyyy' }} al {{ p.fechaFin | date:'dd/MM/yyyy' }}</span>
+                      </div>
+                      <div class="actions">
+                        <button type="button" class="btn-delete" (click)="eliminarPeriodo(p)" title="Eliminar Período">&times;</button>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div class="empty-message">No hay periodos escolares asignados para este ciclo.</div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ================= MODAL DINÁMICO DE CREACIÓN / EDICIÓN ================= -->
+<div class="modal-overlay" *ngIf="mostrarModal()">
+  <div class="modal-card">
+    <div class="modal-card__header">
+      <h2>
+        @if (modoEdicion()) {
+          Editar Registro
+        } @else {
+          Nuevo Registro
+        }
+      </h2>
+      <button type="button" class="close-btn" (click)="cerrarModal()">
+        <lucide-icon name="x" [size]="20"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="modal-card__body">
+      <!-- FORM AULAS -->
+      @if (seccion() === 'aulas') {
+        <form [formGroup]="aulaForm" class="modal-form">
+          <div class="field-grid">
+            <label class="field field--full">
+              <span>Nombre del Aula</span>
+              <input type="text" formControlName="nombre" placeholder="Ej: Aula 101, Laboratorio B" />
+            </label>
+            <label class="field">
+              <span>Código</span>
+              <input type="text" formControlName="codigo" placeholder="Ej: A101" />
+            </label>
+            <label class="field">
+              <span>Capacidad</span>
+              <input type="number" formControlName="capacidad" />
+            </label>
+            <label class="field">
+              <span>Tipo de Aula</span>
+              <select formControlName="tipo">
+                <option value="Teórica">Teórica</option>
+                <option value="Laboratorio">Laboratorio</option>
+                <option value="Taller">Taller</option>
+                <option value="Auditorio">Auditorio</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Piso</span>
+              <input type="text" formControlName="piso" />
+            </label>
+            <label class="field">
+              <span>Bloque</span>
+              <input type="text" formControlName="bloque" />
+            </label>
+            <label class="field field--full">
+              <span>Equipamiento</span>
+              <input type="text" formControlName="equipamiento" placeholder="Ej: Proyector, Pizarra Inteligente, Aire Acondicionado" />
+            </label>
+            <div class="checkbox-wrapper field--full">
+              <input type="checkbox" id="aula-disponible" formControlName="disponible" />
+              <label for="aula-disponible">El aula está disponible para programar clases</label>
+            </div>
+          </div>
+        </form>
+      }
+
+      <!-- FORM MATERIAS -->
+      @if (seccion() === 'materias') {
+        <form [formGroup]="materiaForm" class="modal-form">
+          <div class="field-grid">
+            <label class="field field--full">
+              <span>Nombre de la Materia</span>
+              <input type="text" formControlName="nombre" placeholder="Ej: Matemática I, Literatura" />
+            </label>
+            <label class="field">
+              <span>Código Interno</span>
+              <input type="text" formControlName="codigo" placeholder="Ej: MAT-101" />
+            </label>
+            <label class="field">
+              <span>Horas por Semana</span>
+              <input type="number" formControlName="horasSemana" />
+            </label>
+            <label class="field">
+              <span>Nivel de Educación</span>
+              <select formControlName="nivelId">
+                <option [ngValue]="null">Selecciona nivel...</option>
+                @for (n of niveles(); track n.id) {
+                  <option [ngValue]="n.id">{{ n.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Color Representativo</span>
+              <input type="color" formControlName="color" style="padding: 4px; cursor: pointer;" />
+            </label>
+            <div class="checkbox-wrapper field--full">
+              <input type="checkbox" id="mat-obliga" formControlName="esObligatoria" />
+              <label for="mat-obliga">Esta materia es obligatoria en la malla curricular</label>
+            </div>
+            <div class="checkbox-wrapper field--full">
+              <input type="checkbox" id="mat-activa" formControlName="activa" />
+              <label for="mat-activa">Materia activa en el catálogo</label>
+            </div>
+            <label class="field field--full">
+              <span>Descripción</span>
+              <input type="text" formControlName="descripcion" placeholder="Descripción breve..." />
+            </label>
+          </div>
+        </form>
+      }
+
+      <!-- FORM GRADOS -->
+      @if (seccion() === 'grados') {
+        <form [formGroup]="gradoForm" class="modal-form">
+          <div class="field-grid">
+            <label class="field">
+              <span>Nombre del Grado</span>
+              <input type="text" formControlName="nombre" placeholder="Ej: Primero, Segundo" />
+            </label>
+            <label class="field">
+              <span>Sección</span>
+              <input type="text" formControlName="seccion" placeholder="Ej: A, B, Única" />
+            </label>
+            <label class="field">
+              <span>Turno</span>
+              <select formControlName="turno">
+                <option value="Mañana">Mañana (Único)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Aforo Máximo</span>
+              <input type="number" formControlName="capacidadMax" />
+            </label>
+            <label class="field">
+              <span>Nivel Educativo</span>
+              <select formControlName="nivelId">
+                <option [ngValue]="null">Seleccionar nivel...</option>
+                @for (n of niveles(); track n.id) {
+                  <option [ngValue]="n.id">{{ n.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Aula Asignada (Sede)</span>
+              <select formControlName="aulaId">
+                <option [ngValue]="null">Ninguna asignada</option>
+                @for (a of aulasDisponiblesParaGrado(); track a.id) {
+                  <option [ngValue]="a.id">{{ a.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Tutor Académico</span>
+              <select formControlName="tutorId">
+                <option [ngValue]="null">Seleccionar tutor...</option>
+                @for (d of docentes(); track d.id) {
+                  <option [ngValue]="d.id">{{ d.nombres }} {{ d.apellidos }} ({{ d.especialidad }})</option>
+                }
+              </select>
+            </label>
+            <div class="checkbox-wrapper field--full">
+              <input type="checkbox" id="grado-activo" formControlName="activo" />
+              <label for="grado-activo">Grado operativo para matrículas</label>
+            </div>
+          </div>
+        </form>
+      }
+
+      <!-- FORM CLASES -->
+      @if (seccion() === 'clases') {
+        <form [formGroup]="claseForm" class="modal-form">
+          <div class="field-grid">
+            <label class="field">
+              <span>Grado Escolar</span>
+              <select formControlName="gradoId" (change)="onGradoChange()">
+                <option [ngValue]="null">Seleccionar grado...</option>
+                @for (g of grados(); track g.id) {
+                  <option [ngValue]="g.id">{{ g.nombre }} "{{ g.seccion }}"</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Materia</span>
+              <select formControlName="materiaId">
+                <option [ngValue]="null">Seleccionar materia...</option>
+                @for (m of materias(); track m.id) {
+                  <option [ngValue]="m.id">{{ m.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Aula</span>
+              <select formControlName="aulaId">
+                <option [ngValue]="null">Sin asignar</option>
+                @for (a of aulas(); track a.id) {
+                  <option [ngValue]="a.id">{{ a.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Año Académico</span>
+              <select formControlName="anoAcademicoId">
+                <option [ngValue]="null">Seleccionar ciclo...</option>
+                @for (an of anos(); track an.id) {
+                  <option [ngValue]="an.id">{{ an.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Docente Asignado</span>
+              <select formControlName="profesorId">
+                <option [ngValue]="null">Seleccionar docente...</option>
+                @for (d of docentes(); track d.id) {
+                  <option [ngValue]="d.id">{{ d.nombres }} {{ d.apellidos }} ({{ d.especialidad }})</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Modalidad</span>
+              <select formControlName="modalidad">
+                <option value="presencial">Presencial</option>
+                <option value="virtual">Virtual</option>
+                <option value="híbrida">Híbrida</option>
+              </select>
+            </label>
+            <label class="field field--full" *ngIf="claseForm.get('modalidad')?.value !== 'presencial'">
+              <span>Enlace de Aula Virtual</span>
+              <input type="text" formControlName="enlaceVirtual" placeholder="https://meet.google.com/..." />
+            </label>
+            <label class="field field--full">
+              <span>Notas / Descripción</span>
+              <input type="text" formControlName="descripcion" placeholder="Opcional..." />
+            </label>
+            <div class="checkbox-wrapper field--full">
+              <input type="checkbox" id="clase-activa" formControlName="activa" />
+              <label for="clase-activa">Clase activa y visible en calendarios</label>
+            </div>
+          </div>
+        </form>
+      }
+
+      <!-- FORM CALENDARIO (AÑO ACADÉMICO) -->
+      @if (seccion() === 'calendario') {
+        <form [formGroup]="anoForm" class="modal-form">
+          <div class="field-grid">
+            <label class="field field--full">
+              <span>Nombre del Ciclo Lectivo</span>
+              <input type="text" formControlName="nombre" placeholder="Ej: Año Escolar 2026" />
+            </label>
+            <label class="field">
+              <span>Fecha Inicio</span>
+              <input type="date" formControlName="fechaInicio" />
+            </label>
+            <label class="field">
+              <span>Fecha Fin</span>
+              <input type="date" formControlName="fechaFin" />
+            </label>
+            <div class="checkbox-wrapper field--full">
+              <input type="checkbox" id="ano-activo" formControlName="activo" />
+              <label for="ano-activo">Año escolar en curso (activo)</label>
+            </div>
+          </div>
+        </form>
+      }
+    </div>
+
+    <div class="modal-card__footer">
+      <button type="button" class="btn btn--muted" (click)="cerrarModal()">Cancelar</button>
+      <button type="button" class="btn btn--primary" (click)="guardar()" [disabled]="guardando()">
+        <lucide-icon name="check" [size]="14"></lucide-icon>
+        {{ guardando() ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,2411 @@
+{
+  "info": {
+    "name": "vg-ms-auth",
+    "description": "Colección Postman para el microservicio de autenticación Valle Grande",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL_8081",
+      "value": "http://localhost:8081",
+      "type": "string"
+    },
+    {
+      "key": "ACCESS_TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "REFRESH_TOKEN",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{ACCESS_TOKEN}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Dev",
+      "item": [
+        {
+          "name": "Seed Superroot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/dev/seed",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dev",
+                "seed"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/auth/login",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@vallegrande.edu.pe\",\n  \"contrasena\": \"Admin2024!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.accessToken) pm.collectionVariables.set('ACCESS_TOKEN', json.accessToken);",
+                  "if (json.refreshToken) pm.collectionVariables.set('REFRESH_TOKEN', json.refreshToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/auth/refresh",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{REFRESH_TOKEN}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/auth/logout",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/auth/register",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"institucionId\": 1,\n  \"nombre\": \"Juan Perez\",\n  \"email\": \"juan.perez@vallegrande.edu.pe\",\n  \"contrasena\": \"Juan1234!\",\n  \"telefono\": \"987654321\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/auth/forgot-password",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juan.perez@vallegrande.edu.pe\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/auth/reset-password",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "reset-password"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"COPIAR_TOKEN_AQUI\",\n  \"newPassword\": \"Nueva2024!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Change Password (Authenticated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/auth/change-password",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "change-password"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Juan1234!\",\n  \"newPassword\": \"JuanNew2024!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Crear Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"institucionId\": 1,\n  \"nombre\": \"Carlos López\",\n  \"email\": \"carlos.lopez@vallegrande.edu.pe\",\n  \"contrasena\": \"Segura2024!\",\n  \"telefono\": \"+51987654321\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar Todos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar por Institución",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios/institucion/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios",
+                "institucion",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar por Institución y Estado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios/institucion/1/estado/A",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios",
+                "institucion",
+                "1",
+                "estado",
+                "A"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar por Estado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios/estado/A",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios",
+                "estado",
+                "A"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios/id/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios",
+                "id",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por UUID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios/550e8400-e29b-41d4-a716-446655440000",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios",
+                "550e8400-e29b-41d4-a716-446655440000"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Usuario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios/550e8400-e29b-41d4-a716-446655440000",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios",
+                "550e8400-e29b-41d4-a716-446655440000"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"institucionId\": 1,\n  \"nombre\": \"Carlos López Actualizado\",\n  \"email\": \"carlos.actualizado@vallegrande.edu.pe\",\n  \"telefono\": \"+51912345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Desactivar Usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios/550e8400-e29b-41d4-a716-446655440000/desactivar",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios",
+                "550e8400-e29b-41d4-a716-446655440000",
+                "desactivar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activar Usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios/550e8400-e29b-41d4-a716-446655440000/activar",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios",
+                "550e8400-e29b-41d4-a716-446655440000",
+                "activar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Usuario",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuarios/550e8400-e29b-41d4-a716-446655440000",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuarios",
+                "550e8400-e29b-41d4-a716-446655440000"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "Crear Rol",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/roles",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"DOCENTE\",\n  \"descripcion\": \"Rol para docentes de la institución\",\n  \"esSistema\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar Todos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/roles",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar Roles Sistema",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/roles/sistema",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                "sistema"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar Roles No Sistema",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/roles/no-sistema",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                "no-sistema"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/roles/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Rol",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/roles/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"DOCENTE_SENIOR\",\n  \"descripcion\": \"Rol actualizado para docentes senior\",\n  \"esSistema\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Rol",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/roles/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Permisos",
+      "item": [
+        {
+          "name": "Crear Permiso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/permisos",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permisos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modulo\": \"USUARIOS\",\n  \"accion\": \"LEER\",\n  \"descripcion\": \"Permite leer listado de usuarios\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar Todos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/permisos",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permisos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar por Módulo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/permisos/modulo/USUARIOS",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permisos",
+                "modulo",
+                "USUARIOS"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar por Rol",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/permisos/rol/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permisos",
+                "rol",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Asignar Permiso a Rol",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/permisos/asignar",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permisos",
+                "asignar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rolId\": 1,\n  \"permisoId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Quitar Permiso (Body)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/permisos/quitar",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permisos",
+                "quitar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rolId\": 1,\n  \"permisoId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Quitar Permiso (Ruta)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/permisos/rol/1/permiso/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permisos",
+                "rol",
+                "1",
+                "permiso",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/permisos/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permisos",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Permiso",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/permisos/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permisos",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modulo\": \"USUARIOS\",\n  \"accion\": \"ESCRIBIR\",\n  \"descripcion\": \"Permite escribir usuarios\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Permiso",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/permisos/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permisos",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Instituciones",
+      "item": [
+        {
+          "name": "Crear Institución",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/instituciones",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instituciones"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Instituto Superior Valle Grande\",\n  \"nombreCorto\": \"ISVG\",\n  \"email\": \"contacto@vallegrande.edu.pe\",\n  \"emailSecundario\": \"admin@vallegrande.edu.pe\",\n  \"telefono\": \"+51064281234\",\n  \"telefonoSecundario\": \"+51064285678\",\n  \"sitioWeb\": \"https://vallegrande.edu.pe\",\n  \"direccion\": \"Av. Principal 123\",\n  \"ciudad\": \"Cañete\",\n  \"departamento\": \"Lima\",\n  \"pais\": \"Perú\",\n  \"codigoPostal\": \"15700\",\n  \"logoUrl\": \"https://vallegrande.edu.pe/logo.png\",\n  \"tipoInstitucion\": \"SUPERIOR\",\n  \"codigoModular\": \"0123456\",\n  \"resolucionCreacion\": \"RD-2024-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar Activas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/instituciones",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instituciones"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar Todas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/instituciones/todas",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instituciones",
+                "todas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar por Estado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/instituciones/estado/A",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instituciones",
+                "estado",
+                "A"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/instituciones/id/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instituciones",
+                "id",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por UUID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/instituciones/550e8400-e29b-41d4-a716-446655440001",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instituciones",
+                "550e8400-e29b-41d4-a716-446655440001"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Institución",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/instituciones/550e8400-e29b-41d4-a716-446655440001",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instituciones",
+                "550e8400-e29b-41d4-a716-446655440001"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Instituto Superior Valle Grande Actualizado\",\n  \"nombreCorto\": \"ISVG-U\",\n  \"email\": \"nuevo@vallegrande.edu.pe\",\n  \"telefono\": \"+51064289999\",\n  \"sitioWeb\": \"https://nuevo.vallegrande.edu.pe\",\n  \"direccion\": \"Av. Nueva 456\",\n  \"ciudad\": \"Cañete\",\n  \"departamento\": \"Lima\",\n  \"pais\": \"Perú\",\n  \"codigoPostal\": \"15700\",\n  \"logoUrl\": \"https://vallegrande.edu.pe/logo-nuevo.png\",\n  \"tipoInstitucion\": \"SUPERIOR\",\n  \"codigoModular\": \"0123456\",\n  \"resolucionCreacion\": \"RD-2024-002\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Desactivar Institución",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/instituciones/550e8400-e29b-41d4-a716-446655440001/desactivar",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instituciones",
+                "550e8400-e29b-41d4-a716-446655440001",
+                "desactivar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activar Institución",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/instituciones/550e8400-e29b-41d4-a716-446655440001/activar",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instituciones",
+                "550e8400-e29b-41d4-a716-446655440001",
+                "activar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Institución",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/instituciones/550e8400-e29b-41d4-a716-446655440001",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instituciones",
+                "550e8400-e29b-41d4-a716-446655440001"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuario Roles",
+      "item": [
+        {
+          "name": "Asignar Rol a Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuario-roles",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuario-roles"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": 1,\n  \"rolId\": 1,\n  \"asignadoPor\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar Todos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuario-roles",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuario-roles"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar Roles por Usuario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuario-roles/usuario/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuario-roles",
+                "usuario",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar Usuarios por Rol",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuario-roles/rol/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuario-roles",
+                "rol",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Quitar Rol de Usuario",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/usuario-roles/1/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "usuario-roles",
+                "1",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Log",
+      "item": [
+        {
+          "name": "Registrar Log",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/audit-log",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-log"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": 1,\n  \"tabla\": \"usuarios\",\n  \"registroId\": 1,\n  \"accion\": \"UPDATE\",\n  \"datosAnteriores\": \"{\\\"nombre\\\":\\\"Carlos\\\"}\",\n  \"datosNuevos\": \"{\\\"nombre\\\":\\\"Carlos López\\\"}\",\n  \"ipOrigen\": \"192.168.1.100\",\n  \"userAgent\": \"Mozilla/5.0\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar Todos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/audit-log",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-log"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/audit-log/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-log",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar por Usuario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/audit-log/usuario/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-log",
+                "usuario",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar por Tabla",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/audit-log/tabla/usuarios",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-log",
+                "tabla",
+                "usuarios"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar por Tabla y Registro",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/audit-log/tabla/usuarios/registro/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-log",
+                "tabla",
+                "usuarios",
+                "registro",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar por Acción",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/audit-log/accion/UPDATE",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-log",
+                "accion",
+                "UPDATE"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Log",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/audit-log/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-log",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Configuración Institución",
+      "item": [
+        {
+          "name": "Crear Configuración",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/configuracion",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuracion"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"institucionId\": 1,\n  \"escalaCalificacionId\": 1,\n  \"temaColorPrimario\": \"#1E40AF\",\n  \"temaColorSecundario\": \"#3B82F6\",\n  \"logoUrl\": \"https://vallegrande.edu.pe/logo.png\",\n  \"mantenerRegistrosAnos\": 5,\n  \"permitirRegistroPadres\": true,\n  \"padresVenCalificaciones\": true,\n  \"padresVenAsistencia\": true,\n  \"padresVenTareas\": true,\n  \"notificacionInasistencia\": true,\n  \"notificacionCalificacionBaja\": true,\n  \"umbralCalificacionBaja\": 10.5,\n  \"horarioInicioClases\": \"07:30:00\",\n  \"horarioFinClases\": \"15:00:00\",\n  \"diasLaborables\": \"LUNES,MARTES,MIERCOLES,JUEVES,VIERNES\",\n  \"idiomaPrincipal\": \"es-PE\",\n  \"zonaHoraria\": \"America/Lima\",\n  \"moneda\": \"PEN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar Todas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/configuracion",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuracion"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por Institución",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/configuracion/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuracion",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Configuración",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/configuracion/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuracion",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"institucionId\": 1,\n  \"escalaCalificacionId\": 2,\n  \"temaColorPrimario\": \"#0F172A\",\n  \"temaColorSecundario\": \"#6366F1\",\n  \"logoUrl\": \"https://vallegrande.edu.pe/logo-v2.png\",\n  \"mantenerRegistrosAnos\": 10,\n  \"permitirRegistroPadres\": true,\n  \"padresVenCalificaciones\": true,\n  \"padresVenAsistencia\": false,\n  \"padresVenTareas\": true,\n  \"notificacionInasistencia\": true,\n  \"notificacionCalificacionBaja\": false,\n  \"umbralCalificacionBaja\": 11,\n  \"horarioInicioClases\": \"08:00:00\",\n  \"horarioFinClases\": \"16:00:00\",\n  \"diasLaborables\": \"LUNES,MARTES,MIERCOLES,JUEVES,VIERNES,SABADO\",\n  \"idiomaPrincipal\": \"es\",\n  \"zonaHoraria\": \"America/Lima\",\n  \"moneda\": \"PEN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Configuración",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL_8081}}/api/v1/configuracion/1",
+              "host": [
+                "{{BASE_URL_8081}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuracion",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

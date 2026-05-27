@@ -1,0 +1,627 @@
+<div class="persons">
+
+  <header class="persons__header">
+    <div class="persons__titulo">
+      <div class="persons__titulo-icono-bg"><lucide-icon name="user" [size]="20"></lucide-icon></div>
+      <div>
+        <h1>Gestión de Personas</h1>
+        <span class="persons__subtitulo">Registro central de personas</span>
+      </div>
+    </div>
+    <button class="btn btn--primario" (click)="abrirModal()">
+      + NUEVA PERSONA
+    </button>
+  </header>
+
+  <div class="persons__body">
+    <div class="persons__stats">
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Total Personas</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ persons().length }}</span>
+            <span class="stat-card__pill stat-card__pill--blue">Registradas</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--blue">
+          <lucide-icon name="users" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Personas Activas</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalActivas() }}</span>
+            <span class="stat-card__pill stat-card__pill--green">Activas</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--green">
+          <lucide-icon name="check-circle" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Personas Inactivas</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">{{ totalInactivas() }}</span>
+            <span class="stat-card__pill stat-card__pill--orange">Inactivas</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--orange">
+          <lucide-icon name="x-circle" [size]="20"></lucide-icon>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__info">
+          <div class="stat-card__label">Tipos Documento</div>
+          <div class="stat-card__valor-container">
+            <span class="stat-card__valor">DNI/CE</span>
+            <span class="stat-card__pill stat-card__pill--purple">Varios</span>
+          </div>
+        </div>
+        <div class="stat-card__icon-container stat-card__icon-container--purple">
+          <lucide-icon name="id-card" [size]="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="persons__controles">
+      <div style="display:flex; gap:12px; align-items:center; flex:1;">
+        <div class="buscador">
+          <lucide-icon name="search" class="buscador__icono" [size]="16"></lucide-icon>
+          <input type="text" placeholder="BUSCAR PERSONA..." class="buscador__input" (input)="setBusqueda($event)" />
+        </div>
+        <div class="vista-toggle">
+          <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'lista'"
+            (click)="setVista('lista')" title="Vista lista">
+            <lucide-icon name="list" [size]="16"></lucide-icon>
+          </button>
+          <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'grilla'"
+            (click)="setVista('grilla')" title="Vista grilla">
+            <lucide-icon name="layout-grid" [size]="16"></lucide-icon>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <div style="position: relative;">
+          <button class="btn btn--outline" (click)="toggleDropdown()"
+            style="width: 220px; justify-content: space-between; display: flex;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <lucide-icon name="filter" [size]="16"></lucide-icon>
+              {{ textoFiltro() }}
+            </div>
+            <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+          </button>
+
+          @if (dropdownAbierto()) {
+          <div class="modal-overlay" style="background: transparent; backdrop-filter: none;"
+            (click)="dropdownAbierto.set(false)"></div>
+          <div
+            style="position: absolute; top: calc(100% + 8px); right: 0; width: 220px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); display: flex; flex-direction: column; padding: 6px; z-index: 1001;">
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'todas'"
+              (click)="seleccionarFiltro('todas')">
+              <lucide-icon name="users" [size]="16"></lucide-icon> Ver todas las personas
+            </button>
+            <div style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'activas'"
+              (click)="seleccionarFiltro('activas')">
+              <lucide-icon name="check-circle" [size]="16"></lucide-icon> Mostrar solo Activas
+            </button>
+            <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'inactivas'"
+              (click)="seleccionarFiltro('inactivas')">
+              <lucide-icon name="x-circle" [size]="16"></lucide-icon> Mostrar solo Inactivas
+            </button>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (cargando()) {
+    <div class="contenido-wrapper">
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Persona</th>
+              <th>Documento</th>
+              <th>Contacto</th>
+              <th>Género</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of [1,2,3,4,5]; track i) {
+            <tr class="tabla__fila">
+              <td>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <div class="skeleton skeleton-circle"></div>
+                  <div style="flex: 1;">
+                    <div class="skeleton skeleton-title"></div>
+                    <div class="skeleton skeleton-text" style="width: 40%;"></div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 80px;"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 70%;"></div>
+                <div class="skeleton skeleton-text" style="width: 50%;"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 60px;"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 60px;"></div>
+              </td>
+              <td>
+                <div style="display: flex; gap: 8px;">
+                  <div class="skeleton skeleton-circle" style="width: 32px; height: 32px;"></div>
+                  <div class="skeleton skeleton-circle" style="width: 32px; height: 32px;"></div>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+    <div class="contenido-wrapper">
+      @if (!cargando() && vistaMode() === 'lista') {
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Persona</th>
+              <th>Documento</th>
+              <th>Contacto</th>
+              <th>Género</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (person of filtradasPaginadas(); track person.id) {
+            <tr class="tabla__fila">
+              <td>
+                <div class="person-info">
+                  <div class="person-info__icono-bg">
+                    @if (person.photoUrl) {
+                    <img [src]="person.photoUrl" class="person-info__foto" alt="Foto" />
+                    } @else {
+                    <lucide-icon name="user" [size]="20"></lucide-icon>
+                    }
+                  </div>
+                  <div>
+                    <div class="person-info__nombre">{{ person.firstName }} {{ person.lastName }} {{
+                      person.secondLastName }}</div>
+                    <div class="person-info__cargo">ID: {{ person.id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="tabla__tipo-doc">{{ person.documentType }}</div>
+                <div class="tabla__sub">{{ person.documentNumber }}</div>
+              </td>
+              <td>
+                <div class="tabla__email">{{ person.email || '—' }}</div>
+                <div class="tabla__sub">{{ person.phone || '—' }}</div>
+              </td>
+              <td>
+                <span class="etiqueta-genero">{{ getGenderLabel(person.gender || '') }}</span>
+              </td>
+              <td>
+                <span class="etiqueta-estado" [class.etiqueta-estado--activo]="person.isActive"
+                  [class.etiqueta-estado--inactivo]="!person.isActive">
+                  {{ person.isActive ? 'ACTIVO' : 'INACTIVO' }}
+                </span>
+              </td>
+              <td>
+                <div class="acciones">
+                  <button class="btn-icono" (click)="verDetalle(person)" title="Ver">
+                    <lucide-icon name="eye" [size]="16"></lucide-icon>
+                  </button>
+                  <button class="btn-icono" (click)="abrirModal(person)" title="Editar">
+                    <lucide-icon name="edit" [size]="16"></lucide-icon>
+                  </button>
+                  <button class="btn-icono" (click)="toggleEstado(person)"
+                    [title]="person.isActive ? 'Desactivar' : 'Activar'">
+                    <lucide-icon name="power" [size]="16"
+                      [style.color]="person.isActive ? '#ef4444' : '#10b981'"></lucide-icon>
+                  </button>
+                  <button class="btn-icono btn-icono--peligro" (click)="eliminar(person.id!)" title="Eliminar">
+                    <lucide-icon name="trash" [size]="16"></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="6" class="tabla__vacio">Sin resultados</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+
+      @if (!cargando() && vistaMode() === 'grilla') {
+      <div class="grilla">
+        @for (person of filtradasPaginadas(); track person.id) {
+        <div class="grilla__card">
+          <div class="grilla__card-icono-bg">
+            @if (person.photoUrl) {
+            <img [src]="person.photoUrl" class="person-info__foto grilla__card-foto" alt="Foto" />
+            } @else {
+            <lucide-icon name="user" [size]="24"></lucide-icon>
+            }
+          </div>
+          <div class="grilla__card-nombre">{{ person.firstName }} {{ person.lastName }}</div>
+          <div class="grilla__card-codigo">{{ person.documentType }}: {{ person.documentNumber }}</div>
+          <div class="grilla__separator"></div>
+          <div class="grilla__card-contacto">
+            <lucide-icon name="mail" [size]="14"></lucide-icon> {{ person.email || '—' }}
+          </div>
+          <div class="grilla__card-contacto">
+            <lucide-icon name="phone" [size]="14"></lucide-icon> {{ person.phone || '—' }}
+          </div>
+          <div class="grilla__card-contacto">
+            <lucide-icon name="user" [size]="14"></lucide-icon> {{ getGenderLabel(person.gender || '') }}
+          </div>
+          <span class="etiqueta-estado" [class.etiqueta-estado--activo]="person.isActive"
+            [class.etiqueta-estado--inactivo]="!person.isActive" style="margin-top: 4px;">
+            {{ person.isActive ? 'ACTIVO' : 'INACTIVO' }}
+          </span>
+          <div class="grilla__card-acciones">
+            <button class="btn-icono" (click)="verDetalle(person)" title="Ver">
+              <lucide-icon name="eye" [size]="16"></lucide-icon>
+            </button>
+            <button class="btn-icono" (click)="abrirModal(person)" title="Editar">
+              <lucide-icon name="edit" [size]="16"></lucide-icon>
+            </button>
+            <button class="btn-icono" (click)="toggleEstado(person)"
+              [title]="person.isActive ? 'Desactivar' : 'Activar'">
+              <lucide-icon name="power" [size]="16"
+                [style.color]="person.isActive ? '#ef4444' : '#10b981'"></lucide-icon>
+            </button>
+            <button class="btn-icono btn-icono--peligro" (click)="eliminar(person.id!)" title="Eliminar">
+              <lucide-icon name="trash" [size]="16"></lucide-icon>
+            </button>
+          </div>
+        </div>
+        } @empty {
+        <p class="persons__cargando">Sin resultados</p>
+        }
+      </div>
+      }
+
+      @if (!cargando()) {
+      <div class="paginacion">
+        <div class="paginacion__info">
+          <span>PÁGINA: {{ paginaActual() }} DE {{ totalPaginas() }}</span>
+          <div class="paginacion__barra">
+            <div class="paginacion__progreso" [style.width.%]="(paginaActual() / totalPaginas()) * 100"></div>
+          </div>
+        </div>
+        <div class="paginacion__controles">
+          <button class="btn-icono" (click)="cambiarPagina(-1)" [disabled]="paginaActual() === 1"
+            [style.opacity]="paginaActual() === 1 ? '0.5' : '1'">
+            <lucide-icon name="chevron-left" [size]="16"></lucide-icon>
+          </button>
+          <button class="btn-paginacion btn-paginacion--activo">{{ paginaActual() }}</button>
+          <button class="btn-icono" (click)="cambiarPagina(1)" [disabled]="paginaActual() === totalPaginas()"
+            [style.opacity]="paginaActual() === totalPaginas() ? '0.5' : '1'">
+            <lucide-icon name="chevron-right" [size]="16"></lucide-icon>
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Modal Formulario con VALIDACIONES MEJORADAS -->
+  @if (mostrarModal()) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__titulo">
+          <div
+            style="width: 32px; height: 32px; background: #E9F0FE; color: #165EF0; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 8px;">
+            <lucide-icon name="user" [size]="18"></lucide-icon>
+          </div>
+          <div>
+            <strong>{{ editando() ? 'Editar Persona' : 'Nueva Persona' }}</strong>
+            <span class="modal__subtitulo">REGISTRO DE PERSONA</span>
+          </div>
+        </div>
+        <button class="modal__cerrar" (click)="cerrarModal()">
+          <lucide-icon name="x" [size]="18"></lucide-icon>
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="modal__body">
+
+        <div class="campo-fila">
+          <div class="campo" style="flex: 1;">
+            <label>Tipo Documento *</label>
+            <select formControlName="documentType">
+              <option value="DNI">DNI — Documento Nacional de Identidad</option>
+              <option value="CE">CE — Carnet de Extranjería</option>
+              <option value="PASSPORT">Pasaporte</option>
+            </select>
+          </div>
+          <div class="campo" style="flex: 1;"
+            [class.campo--error]="form.get('documentNumber')?.invalid && form.get('documentNumber')?.touched">
+            <label>Número Documento *</label>
+            <input formControlName="documentNumber" type="text" placeholder="Ej. 12345678" maxlength="12" />
+            @if (!(form.get('documentNumber')?.invalid && form.get('documentNumber')?.touched)) {
+            <span class="campo__hint">Mín. 8 caracteres</span>
+            }
+            @if (form.get('documentNumber')?.invalid && form.get('documentNumber')?.touched) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              {{ documentNumberError }}
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="campo-fila">
+          <div class="campo" style="flex: 1;"
+            [class.campo--error]="form.get('firstName')?.invalid && form.get('firstName')?.touched">
+            <label>Nombres *</label>
+            <input formControlName="firstName" type="text" placeholder="Ej. Juan Carlos" />
+            @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              @if (form.get('firstName')?.hasError('required')) {
+              El nombre es obligatorio
+              } @else if (form.get('firstName')?.hasError('soloLetras')) {
+              Solo se permiten letras y espacios
+              }
+            </div>
+            }
+          </div>
+          <div class="campo" style="flex: 1;"
+            [class.campo--error]="form.get('lastName')?.invalid && form.get('lastName')?.touched">
+            <label>Apellido Paterno *</label>
+            <input formControlName="lastName" type="text" placeholder="Ej. García" />
+            @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              @if (form.get('lastName')?.hasError('required')) {
+              El apellido paterno es obligatorio
+              } @else if (form.get('lastName')?.hasError('soloLetras')) {
+              Solo se permiten letras y espacios
+              }
+            </div>
+            }
+          </div>
+          <div class="campo" style="flex: 1;"
+            [class.campo--error]="form.get('secondLastName')?.invalid && form.get('secondLastName')?.touched">
+            <label>Apellido Materno</label>
+            <input formControlName="secondLastName" type="text" placeholder="Ej. López" />
+            <span class="campo__hint">Opcional</span>
+            @if (form.get('secondLastName')?.invalid && form.get('secondLastName')?.touched && form.get('secondLastName')?.value) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              Solo se permiten letras y espacios (sin números)
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="campo-fila">
+          <div class="campo" [class.campo--error]="form.get('birthDate')?.invalid && form.get('birthDate')?.touched">
+            <label>Fecha Nacimiento *</label>
+            <input formControlName="birthDate" type="date" />
+            @if (form.get('birthDate')?.invalid && form.get('birthDate')?.touched) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              @if (form.get('birthDate')?.hasError('required')) {
+              La fecha de nacimiento es obligatoria
+              } @else if (form.get('birthDate')?.hasError('futureDate')) {
+              La fecha de nacimiento no puede ser futura
+              } @else if (form.get('birthDate')?.hasError('maxAge')) {
+              Edad no válida
+              }
+            </div>
+            }
+          </div>
+          <div class="campo">
+            <label>Género</label>
+            <select formControlName="gender">
+              <option value="">— Seleccionar —</option>
+              <option value="MALE">Masculino</option>
+              <option value="FEMALE">Femenino</option>
+              <option value="OTHER">Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="campo-fila">
+          <div class="campo" style="flex: 1;"
+            [class.campo--error]="form.get('email')?.invalid && form.get('email')?.touched">
+            <label>Email</label>
+            <input formControlName="email" type="email" placeholder="Ej. juan@example.com" />
+            @if (!( form.get('email')?.invalid && form.get('email')?.touched)) {
+            <span class="campo__hint">Opcional · formato usuario@dominio.com</span>
+            }
+            @if (form.get('email')?.invalid && form.get('email')?.touched) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              Ingresa un email válido (ej. juan@gmail.com)
+            </div>
+            }
+          </div>
+          <div class="campo" style="flex: 1;"
+            [class.campo--error]="form.get('phone')?.invalid && form.get('phone')?.touched">
+            <label>Teléfono</label>
+            <input formControlName="phone" type="tel" placeholder="Ej. 987654321" maxlength="9" />
+            <span class="campo__hint">9 dígitos, empieza con 9</span>
+            @if (form.get('phone')?.invalid && form.get('phone')?.touched && form.get('phone')?.value) {
+            <div class="error-message">
+              <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+              @if (form.get('phone')?.hasError('telefonoInvalido')) {
+              Debe tener 9 dígitos y empezar con 9 (ej: 987654321)
+              }
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Dirección</label>
+          <input formControlName="address" type="text" placeholder="Ej. Av. Los Rosales 123, Lima" />
+          <span class="campo__hint">Opcional</span>
+        </div>
+
+        <div class="campo-fila">
+          <div class="campo">
+            <label>Ubigeo</label>
+            <input formControlName="ubigeo" type="text" placeholder="Ej. 150101" maxlength="6" />
+            <span class="campo__hint">Código de 6 dígitos</span>
+          </div>
+          <div class="campo">
+            <label>URL Foto</label>
+            <input formControlName="photoUrl" type="url" placeholder="https://..." />
+            <span class="campo__hint">Opcional · enlace a imagen</span>
+          </div>
+        </div>
+
+        <div class="modal__footer">
+          <button type="button" class="btn btn--secundario" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primario" [disabled]="form.invalid">
+            {{ editando() ? 'Guardar Cambios' : 'Registrar Persona' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  <!-- Rightbar Detalle -->
+  <div class="rightbar-overlay" [class.rightbar-overlay--visible]="mostrarDetalle()" (click)="cerrarDetalle()"></div>
+  <aside class="rightbar" [class.rightbar--open]="mostrarDetalle()">
+    @if (detalleCargando()) {
+    <div class="rightbar__header">
+      <div class="rightbar__header-info">
+        <div class="rightbar__icono-bg skeleton" style="width:38px;height:38px;border-radius:8px;"></div>
+        <div style="flex:1;">
+          <div class="skeleton skeleton-title" style="width:60%;"></div>
+          <div class="skeleton skeleton-text" style="width:40%;margin-top:4px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="rightbar__body">
+      @for (s of [1,2,3]; track s) {
+      <div>
+        <div class="skeleton skeleton-text" style="width:30%;"></div>
+        <div class="skeleton skeleton-rect" style="height:40px;margin-top:8px;"></div>
+      </div>
+      }
+    </div>
+    } @else if (detalle(); as d) {
+    <div class="rightbar__header">
+      <div class="rightbar__header-info">
+        <div class="rightbar__icono-bg">
+          <lucide-icon name="user" [size]="18"></lucide-icon>
+        </div>
+        <div>
+          <strong>{{ d.firstName }} {{ d.lastName }}</strong>
+          <span class="rightbar__subtitulo">{{ d.documentType }}: {{ d.documentNumber }}</span>
+        </div>
+      </div>
+      <button class="modal__cerrar" (click)="cerrarDetalle()">
+        <lucide-icon name="x" [size]="18"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="rightbar__body">
+      <div class="rightbar__seccion">
+        <h3 class="rightbar__seccion-titulo">Información Personal</h3>
+        <div class="detalle-grid">
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Nombres</span>
+            <span class="detalle-campo__valor">{{ d.firstName }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Apellidos</span>
+            <span class="detalle-campo__valor">{{ d.lastName }} {{ d.secondLastName || '' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Tipo Documento</span>
+            <span class="detalle-campo__valor">{{ d.documentType }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Número Documento</span>
+            <span class="detalle-campo__valor">{{ d.documentNumber }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Fecha Nacimiento</span>
+            <span class="detalle-campo__valor">{{ formatearFecha(d.birthDate) }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Género</span>
+            <span class="detalle-campo__valor">{{ getGenderLabel(d.gender) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rightbar__seccion">
+        <h3 class="rightbar__seccion-titulo">Contacto</h3>
+        <div class="detalle-grid">
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Email</span>
+            <span class="detalle-campo__valor">{{ d.email || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Teléfono</span>
+            <span class="detalle-campo__valor">{{ d.phone || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Dirección</span>
+            <span class="detalle-campo__valor">{{ d.address || '—' }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Ubigeo</span>
+            <span class="detalle-campo__valor">{{ d.ubigeo || '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rightbar__seccion">
+        <h3 class="rightbar__seccion-titulo">Estado</h3>
+        <div class="detalle-grid">
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Estado</span>
+            <span class="detalle-campo__valor">
+              <span class="etiqueta-estado" [class.etiqueta-estado--activo]="d.isActive"
+                [class.etiqueta-estado--inactivo]="!d.isActive">
+                {{ d.isActive ? 'ACTIVO' : 'INACTIVO' }}
+              </span>
+            </span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Creado</span>
+            <span class="detalle-campo__valor">{{ formatearFecha(d.createdAt) }}</span>
+          </div>
+          <div class="detalle-campo">
+            <span class="detalle-campo__label">Actualizado</span>
+            <span class="detalle-campo__valor">{{ formatearFecha(d.updatedAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rightbar__footer">
+      <button type="button" class="btn btn--secundario" (click)="cerrarDetalle()">Cerrar</button>
+      <button type="button" class="btn btn--primario" (click)="cerrarDetalle(); abrirModal(d)">Editar</button>
+    </div>
+    }
+  </aside>
+</div>

@@ -1,0 +1,102 @@
+================================================================================
+          INSTRUCCIONES PARA DESPLIEGUE CON DOCKER COMPOSE - EDUNOVA
+================================================================================
+
+Este documento contiene los pasos detallados para compilar tus imágenes de Docker,
+subirlas a Docker Hub, y posteriormente descargarlas y ejecutarlas en cualquier
+otra computadora utilizando Docker Compose sin necesidad del código fuente.
+
+--------------------------------------------------------------------------------
+PARTE 1: COMPILAR Y SUBIR LAS IMÁGENES (En tu PC de desarrollo actual)
+--------------------------------------------------------------------------------
+
+1. Asegúrate de estar en la raíz de tu proyecto ('c:\Users\carlo\Desktop\repo').
+
+2. Abre una terminal y construye las imágenes locales:
+   docker compose build
+
+3. Inicia sesión en Docker Hub desde tu terminal:
+   docker login
+   (Introduce tu usuario y contraseña de Docker Hub cuando te lo solicite).
+
+4. Etiqueta (tag) las imágenes para subirlas a tu cuenta de Docker Hub:
+   (REEMPLAZA "tu_usuario_docker" por tu nombre de usuario real de Docker Hub)
+   
+   docker tag repo-vg-ms-auth:latest tu_usuario_docker/vg-ms-auth:latest
+   docker tag repo-vg-web-edunova:latest tu_usuario_docker/vg-web-edunova:latest
+
+5. Sube las imágenes a tu repositorio de Docker Hub:
+   docker push tu_usuario_docker/vg-ms-auth:latest
+   docker push tu_usuario_docker/vg-web-edunova:latest
+
+
+--------------------------------------------------------------------------------
+PARTE 2: EJECUTAR LAS IMÁGENES (En la otra PC de destino)
+--------------------------------------------------------------------------------
+
+En la otra computadora NO necesitas clonar tu código fuente. Solo sigue estos pasos:
+
+1. Crea una carpeta vacía llamada 'edunova' (o el nombre que gustes).
+
+2. Crea dentro de esa carpeta un archivo llamado 'docker-compose.yml' y pega el 
+   siguiente contenido:
+   (REEMPLAZA "tu_usuario_docker" por tu nombre de usuario real de Docker Hub)
+
+=============================== CORTAR AQUÍ ===============================
+services:
+  vg-ms-auth:
+    image: tu_usuario_docker/vg-ms-auth:latest
+    container_name: vg-ms-auth
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - SPRING_R2DBC_URL=r2dbc:postgresql://neondb_owner:npg_Hh4Pxl6ZASRo@ep-red-river-amzz7klz-pooler.c-5.us-east-1.aws.neon.tech/vg-ms-auth?sslmode=require
+      - SPRING_R2DBC_USERNAME=neondb_owner
+      - SPRING_R2DBC_PASSWORD=npg_Hh4Pxl6ZASRo
+      - SQL_INIT_MODE=never
+      - SERVICES_ACADEMIC_URL=http://localhost:8082
+      - SERVICES_STUDENT_URL=http://localhost:8083
+      - JWT_SECRET=8c2NyL8aXGq6oOnfwdJlH/cl1hajrPDtBNmwGYYKCMk=
+      - JWT_EXPIRATION=3600000
+      - JWT_REFRESH_EXPIRATION=86400000
+      - APP_FRONTEND_URL=http://localhost:4200
+    networks:
+      - edunova-network
+    restart: unless-stopped
+
+  vg-web-edunova:
+    image: tu_usuario_docker/vg-web-edunova:latest
+    container_name: vg-web-edunova
+    ports:
+      - "4200:80"
+    depends_on:
+      - vg-ms-auth
+    networks:
+      - edunova-network
+    restart: unless-stopped
+
+networks:
+  edunova-network:
+    driver: bridge
+=============================== CORTAR AQUÍ ===============================
+
+3. Abre una terminal dentro de la carpeta donde creaste el archivo 
+   'docker-compose.yml' y ejecuta:
+   docker compose up -d
+
+4. ¡Listo! Ya puedes abrir tu navegador en:
+   http://localhost:4200
+
+--------------------------------------------------------------------------------
+RECOMENDACIÓN SOBRE MICROSERVICIOS ADICIONALES (CUIDADO)
+--------------------------------------------------------------------------------
+Tu configuración de Nginx ('nginx.conf') tiene rutas adicionales para otros 
+microservicios (como 'vg-ms-academic', 'vg-ms-student', etc.). 
+
+Si notas que el contenedor del frontend ('vg-web-edunova') se apaga o falla 
+al iniciar en la otra computadora, es porque Nginx no puede resolver esas 
+direcciones en la red de Docker. Si esto pasa, tienes dos opciones:
+1. Comentar las secciones de '/api/materias', '/api/students', etc., en 
+   el archivo 'nginx.conf' del frontend y reconstruir la imagen.
+2. Levantar el resto de los microservicios dentro de esta misma red de Docker.

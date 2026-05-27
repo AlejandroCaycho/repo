@@ -1,0 +1,565 @@
+<div class="evaluation-criteria">
+
+    <header class="evaluation-criteria__header">
+        <div class="evaluation-criteria__titulo">
+            <div class="evaluation-criteria__titulo-icono-bg"><lucide-icon name="layers" [size]="20"></lucide-icon>
+            </div>
+            <div>
+                <h1>Criterios de Evaluación</h1>
+                <span class="evaluation-criteria__subtitulo">Competencias, capacidades y desempeños</span>
+            </div>
+        </div>
+        <button class="btn btn--primario" (click)="abrirModal()" [disabled]="cargandoSelects()">
+            + NUEVO CRITERIO
+        </button>
+    </header>
+
+    <div class="evaluation-criteria__body">
+        <!-- Stats Cards -->
+        <div class="evaluation-criteria__stats">
+            <div class="stat-card">
+                <div class="stat-card__info">
+                    <div class="stat-card__label">Total Criterios</div>
+                    <div class="stat-card__valor-container">
+                        <span class="stat-card__valor">{{ criteria().length }}</span>
+                        <span class="stat-card__pill stat-card__pill--blue">Registrados</span>
+                    </div>
+                </div>
+                <div class="stat-card__icon-container stat-card__icon-container--blue">
+                    <lucide-icon name="layers" [size]="20"></lucide-icon>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card__info">
+                    <div class="stat-card__label">Criterios Activos</div>
+                    <div class="stat-card__valor-container">
+                        <span class="stat-card__valor">{{ totalActivos() }}</span>
+                        <span class="stat-card__pill stat-card__pill--green">Activos</span>
+                    </div>
+                </div>
+                <div class="stat-card__icon-container stat-card__icon-container--green">
+                    <lucide-icon name="check-circle" [size]="20"></lucide-icon>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card__info">
+                    <div class="stat-card__label">Criterios Inactivos</div>
+                    <div class="stat-card__valor-container">
+                        <span class="stat-card__valor">{{ totalInactivos() }}</span>
+                        <span class="stat-card__pill stat-card__pill--orange">Inactivos</span>
+                    </div>
+                </div>
+                <div class="stat-card__icon-container stat-card__icon-container--orange">
+                    <lucide-icon name="x-circle" [size]="20"></lucide-icon>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card__info">
+                    <div class="stat-card__label">Competencias</div>
+                    <div class="stat-card__valor-container">
+                        <span class="stat-card__valor">{{ totalCompetencias() }}</span>
+                        <span class="stat-card__pill stat-card__pill--purple">Base</span>
+                    </div>
+                </div>
+                <div class="stat-card__icon-container stat-card__icon-container--purple">
+                    <lucide-icon name="trending-up" [size]="20"></lucide-icon>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="evaluation-criteria__controles">
+            <div style="display:flex; gap:12px; align-items:center; flex:1;">
+                <div class="buscador">
+                    <lucide-icon name="search" class="buscador__icono" [size]="16"></lucide-icon>
+                    <input type="text" placeholder="BUSCAR POR NOMBRE O DESCRIPCIÓN..." class="buscador__input"
+                        (input)="setBusqueda($event)" />
+                </div>
+                <div class="vista-toggle">
+                    <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'lista'"
+                        (click)="setVista('lista')" title="Vista lista">
+                        <lucide-icon name="list" [size]="16"></lucide-icon>
+                    </button>
+                    <button class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaMode() === 'grilla'"
+                        (click)="setVista('grilla')" title="Vista grilla">
+                        <lucide-icon name="layout-grid" [size]="16"></lucide-icon>
+                    </button>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <!-- Filtro por tipo -->
+                <div class="dropdown-container">
+                    <button class="btn btn--outline" (click)="toggleTipoDropdown()">
+                        <div class="btn-content">
+                            <lucide-icon name="filter" [size]="16"></lucide-icon>
+                            <span>Tipo: {{ textoTipoFiltro() }}</span>
+                            <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+                        </div>
+                    </button>
+                    @if (tipoDropdownAbierto()) {
+                    <div class="dropdown-overlay" (click)="tipoDropdownAbierto.set(false)"></div>
+                    <div class="dropdown-menu">
+                        <button class="dropdown-item" [class.dropdown-item--activo]="tipoFiltro() === 'todos'"
+                            (click)="seleccionarTipoFiltro('todos')">
+                            <lucide-icon name="layers" [size]="16"></lucide-icon> Todos
+                        </button>
+                        <button class="dropdown-item" [class.dropdown-item--activo]="tipoFiltro() === 'competence'"
+                            (click)="seleccionarTipoFiltro('competence')">
+                            <lucide-icon name="check-circle" [size]="16"></lucide-icon> Competencias
+                        </button>
+                        <button class="dropdown-item" [class.dropdown-item--activo]="tipoFiltro() === 'capacity'"
+                            (click)="seleccionarTipoFiltro('capacity')">
+                            <lucide-icon name="trending-up" [size]="16"></lucide-icon> Capacidades
+                        </button>
+                        <button class="dropdown-item" [class.dropdown-item--activo]="tipoFiltro() === 'performance'"
+                            (click)="seleccionarTipoFiltro('performance')">
+                            <lucide-icon name="award" [size]="16"></lucide-icon> Desempeños
+                        </button>
+                    </div>
+                    }
+                </div>
+
+                <!-- Filtro por estado activo/inactivo -->
+                <div class="dropdown-container">
+                    <button class="btn btn--outline" (click)="toggleDropdown()">
+                        <div class="btn-content">
+                            <lucide-icon name="filter" [size]="16"></lucide-icon>
+                            <span>{{ textoFiltro() }}</span>
+                            <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+                        </div>
+                    </button>
+                    @if (dropdownAbierto()) {
+                    <div class="dropdown-overlay" (click)="dropdownAbierto.set(false)"></div>
+                    <div class="dropdown-menu">
+                        <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'todas'"
+                            (click)="seleccionarFiltro('todas')">
+                            <lucide-icon name="layers" [size]="16"></lucide-icon> Todos los criterios
+                        </button>
+                        <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'activas'"
+                            (click)="seleccionarFiltro('activas')">
+                            <lucide-icon name="check-circle" [size]="16"></lucide-icon> Solo activos
+                        </button>
+                        <button class="dropdown-item" [class.dropdown-item--activo]="estadoFiltro() === 'inactivas'"
+                            (click)="seleccionarFiltro('inactivas')">
+                            <lucide-icon name="x-circle" [size]="16"></lucide-icon> Solo inactivos
+                        </button>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Skeleton Loading -->
+        @if (cargando()) {
+        <div class="contenido-wrapper">
+            <div class="tabla-contenedor">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Criterio</th>
+                            <th>Tipo</th>
+                            <th>Escala</th>
+                            <th>Criterio Padre</th>
+                            <th>Peso</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (i of [1,2,3,4,5]; track i) {
+                        <tr class="tabla__fila">
+                            <td>
+                                <div class="skeleton skeleton-text" style="width:150px"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton skeleton-text" style="width:80px"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton skeleton-text" style="width:100px"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton skeleton-text" style="width:100px"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton skeleton-text" style="width:50px"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton skeleton-text" style="width:60px"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton skeleton-circle" style="width:32px"></div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        }
+
+        <!-- Vista Lista -->
+        <div class="contenido-wrapper">
+            @if (!cargando() && vistaMode() === 'lista') {
+            <div class="tabla-contenedor">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Criterio</th>
+                            <th>Tipo</th>
+                            <th>Escala</th>
+                            <th>Criterio Padre</th>
+                            <th>Peso</th>
+                            <th>Subcriterios</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (criterio of filtradasPaginadas(); track criterio.id) {
+                        <tr class="tabla__fila">
+                            <td>
+                                <div class="criterio-info">
+                                    <div class="criterio-info__icono-bg"><lucide-icon name="file-text"
+                                            [size]="20"></lucide-icon></div>
+                                    <div>
+                                        <div class="criterio-info__nombre">{{ criterio.name }}</div>
+                                        <div class="criterio-info__id">{{ criterio.description || 'Sin descripción' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="etiqueta-tipo" [style.backgroundColor]="getTypeColor(criterio.type)"
+                                    [style.color]="'white'">
+                                    {{ getTypeLabel(criterio.type) }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="tabla__escala">{{ criterio.scaleName || '-' }}</div>
+                            </td>
+                            <td>
+                                <div class="tabla__padre">{{ criterio.parentName || '-' }}</div>
+                            </td>
+                            <td>
+                                <div class="tabla__peso">{{ criterio.weight ? criterio.weight + '%' : '-' }}</div>
+                            </td>
+                            <td>
+                                <div class="tabla__subcriterios">{{ criterio.childrenCount || 0 }}</div>
+                            </td>
+                            <td>
+                                <span class="etiqueta-estado" [class.etiqueta-estado--activo]="criterio.isActive"
+                                    [class.etiqueta-estado--inactivo]="!criterio.isActive">
+                                    {{ criterio.isActive ? 'ACTIVO' : 'INACTIVO' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="acciones">
+                                    <button class="btn-icono" (click)="verDetalle(criterio)" title="Ver"><lucide-icon
+                                            name="eye" [size]="16"></lucide-icon></button>
+                                    <button class="btn-icono" (click)="abrirModal(criterio)" title="Editar"><lucide-icon
+                                            name="edit" [size]="16"></lucide-icon></button>
+                                    <button class="btn-icono" (click)="toggleEstado(criterio)"
+                                        [title]="criterio.isActive ? 'Desactivar' : 'Activar'">
+                                        <lucide-icon name="power" [size]="16"
+                                            [style.color]="criterio.isActive ? '#ef4444' : '#10b981'"></lucide-icon>
+                                    </button>
+                                    <button class="btn-icono btn-icono--peligro" (click)="eliminar(criterio.id!)"
+                                        title="Eliminar">
+                                        <lucide-icon name="trash" [size]="16"></lucide-icon>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        } @empty {
+                        <tr>
+                            <td colspan="8" class="tabla__vacio">Sin resultados</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+
+            <!-- Vista Grilla -->
+            @if (!cargando() && vistaMode() === 'grilla') {
+            <div class="grilla">
+                @for (criterio of filtradasPaginadas(); track criterio.id) {
+                <div class="grilla__card">
+                    <div class="grilla__card-icono-bg"><lucide-icon name="file-text" [size]="24"></lucide-icon></div>
+                    <div class="grilla__card-nombre">{{ criterio.name }}</div>
+                    <div class="grilla__card-tipo">
+                        <span class="etiqueta-tipo" [style.backgroundColor]="getTypeColor(criterio.type)"
+                            [style.color]="'white'">
+                            {{ getTypeLabel(criterio.type) }}
+                        </span>
+                    </div>
+                    <div class="grilla__separator"></div>
+                    <div class="grilla__card-escala">
+                        <lucide-icon name="settings" [size]="14"></lucide-icon> {{ criterio.scaleName || 'Sin escala' }}
+                    </div>
+                    @if (criterio.parentName) {
+                    <div class="grilla__card-padre">
+                        <lucide-icon name="layers" [size]="14"></lucide-icon> Padre: {{ criterio.parentName }}
+                    </div>
+                    }
+                    @if (criterio.weight) {
+                    <div class="grilla__card-peso">
+                        <lucide-icon name="percent" [size]="14"></lucide-icon> Peso: {{ criterio.weight }}%
+                    </div>
+                    }
+                    <div class="grilla__card-hijos">
+                        <lucide-icon name="users" [size]="14"></lucide-icon> Subcriterios: {{ criterio.childrenCount ||
+                        0 }}
+                    </div>
+                    <span class="etiqueta-estado" [class.etiqueta-estado--activo]="criterio.isActive"
+                        [class.etiqueta-estado--inactivo]="!criterio.isActive">
+                        {{ criterio.isActive ? 'ACTIVO' : 'INACTIVO' }}
+                    </span>
+                    <div class="grilla__card-acciones">
+                        <button class="btn-icono" (click)="verDetalle(criterio)" title="Ver"><lucide-icon name="eye"
+                                [size]="16"></lucide-icon></button>
+                        <button class="btn-icono" (click)="abrirModal(criterio)" title="Editar"><lucide-icon name="edit"
+                                [size]="16"></lucide-icon></button>
+                        <button class="btn-icono" (click)="toggleEstado(criterio)"
+                            [title]="criterio.isActive ? 'Desactivar' : 'Activar'">
+                            <lucide-icon name="power" [size]="16"
+                                [style.color]="criterio.isActive ? '#ef4444' : '#10b981'"></lucide-icon>
+                        </button>
+                        <button class="btn-icono btn-icono--peligro" (click)="eliminar(criterio.id!)"
+                            title="Eliminar"><lucide-icon name="trash" [size]="16"></lucide-icon></button>
+                    </div>
+                </div>
+                } @empty { <p class="evaluation-criteria__cargando">Sin resultados</p> }
+            </div>
+            }
+
+            <!-- Paginación -->
+            @if (!cargando()) {
+            <div class="paginacion">
+                <div class="paginacion__info">
+                    <span>PÁGINA: {{ paginaActual() }} DE {{ totalPaginas() }}</span>
+                    <div class="paginacion__barra">
+                        <div class="paginacion__progreso" [style.width.%]="(paginaActual() / totalPaginas()) * 100">
+                        </div>
+                    </div>
+                </div>
+                <div class="paginacion__controles">
+                    <button class="btn-icono" (click)="cambiarPagina(-1)" [disabled]="paginaActual() === 1"><lucide-icon
+                            name="chevron-left" [size]="16"></lucide-icon></button>
+                    <button class="btn-paginacion btn-paginacion--activo">{{ paginaActual() }}</button>
+                    <button class="btn-icono" (click)="cambiarPagina(1)"
+                        [disabled]="paginaActual() === totalPaginas()"><lucide-icon name="chevron-right"
+                            [size]="16"></lucide-icon></button>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- Modal Formulario -->
+    @if (mostrarModal()) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal__header">
+                <div class="modal__titulo">
+                    <div class="modal__icono-bg"><lucide-icon name="layers" [size]="18"></lucide-icon></div>
+                    <div><strong>{{ editando() ? 'Editar Criterio' : 'Nuevo Criterio' }}</strong><span
+                            class="modal__subtitulo">CRITERIO DE EVALUACIÓN</span></div>
+                </div>
+                <button class="modal__cerrar" (click)="cerrarModal()"><lucide-icon name="x"
+                        [size]="18"></lucide-icon></button>
+            </div>
+
+            <form [formGroup]="form" (ngSubmit)="guardar()" class="modal__body">
+
+                <div class="campo-fila">
+                    <div class="campo" [class.campo--error]="nameInvalid">
+                        <label>Nombre del Criterio *</label>
+                        <input formControlName="name" type="text" placeholder="Ej. Resuelve problemas matemáticos"
+                            [class.error]="nameInvalid" />
+                        @if (!nameInvalid) {
+                        <span class="campo__hint">Mín. 3 caracteres · letras, números y espacios</span>
+                        }
+                        @if (nameInvalid && nameError) {
+                        <div class="error-message">
+                            <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+                            {{ nameError }}
+                        </div>
+                        }
+                    </div>
+
+                    <div class="campo">
+                        <label>Tipo de Criterio *</label>
+                        <select formControlName="type" class="custom-select">
+                            <option value="competence">Competencia</option>
+                            <option value="capacity">Capacidad</option>
+                            <option value="performance">Desempeño</option>
+                        </select>
+                        <span class="campo__hint">
+                            @if (isCompetence()) { Criterio base de nivel superior }
+                            @if (isCapacity()) { Necesita una competencia padre }
+                            @if (isPerformance()) { Nivel más específico de evaluación }
+                        </span>
+                    </div>
+                </div>
+
+                <div class="campo">
+                    <label>Descripción</label>
+                    <textarea formControlName="description" rows="2"
+                        placeholder="Descripción detallada del criterio de evaluación" class="textarea"></textarea>
+                    <span class="campo__hint">Opcional · máx. 300 caracteres</span>
+                </div>
+
+                <div class="campo-fila">
+                    <div class="campo" [class.campo--error]="scaleIdInvalid">
+                        <label>Escala de Calificación *</label>
+                        <select formControlName="scaleId" class="custom-select" [class.error]="scaleIdInvalid">
+                            <option [ngValue]="null" disabled>— Seleccionar escala —</option>
+                            @for (scale of scales(); track scale.id) {
+                            <option [ngValue]="scale.id">{{ getScaleDisplay(scale) }}</option>
+                            }
+                        </select>
+                        @if (!scaleIdInvalid) {
+                        <span class="campo__hint">Define cómo se calificará este criterio</span>
+                        }
+                        @if (scaleIdInvalid) {
+                        <div class="error-message">
+                            <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+                            Selecciona una escala de calificación
+                        </div>
+                        }
+                    </div>
+
+                    @if (!isCompetence()) {
+                    <div class="campo" [class.campo--error]="parentIdInvalid">
+                        <label>Competencia Padre *</label>
+                        <select formControlName="parentId" class="custom-select" [class.error]="parentIdInvalid">
+                            <option [ngValue]="null" disabled>— Seleccionar competencia —</option>
+                            @for (parent of parentOptions(); track parent.id) {
+                            <option [ngValue]="parent.id">{{ getParentDisplay(parent) }}</option>
+                            }
+                        </select>
+                        @if (!parentIdInvalid) {
+                        <span class="campo__hint">Competencia a la que pertenece</span>
+                        }
+                        @if (parentIdInvalid) {
+                        <div class="error-message">
+                            <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+                            Selecciona la competencia padre
+                        </div>
+                        }
+                    </div>
+                    }
+
+                    @if (isCompetence() || isCapacity()) {
+                    <div class="campo" [class.campo--error]="weightInvalid">
+                        <label>Peso (%)</label>
+                        <input formControlName="weight" type="number" step="1" min="0" max="100" placeholder="100"
+                            [class.error]="weightInvalid" />
+                        @if (!weightInvalid) {
+                        <span class="campo__hint">Porcentaje de 0 a 100</span>
+                        }
+                        @if (weightInvalid && weightError) {
+                        <div class="error-message">
+                            <lucide-icon name="alert-circle" [size]="12"></lucide-icon>
+                            {{ weightError }}
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+
+                <div class="campo-fila">
+                    <div class="campo">
+                        <label>ID de Materia</label>
+                        <input formControlName="subjectId" type="number" placeholder="ID en ms-academic" />
+                        <span class="campo__hint">Opcional · vincula con una materia</span>
+                    </div>
+                    <div class="campo">
+                        <label>ID de Período</label>
+                        <input formControlName="academicPeriodId" type="number" placeholder="ID del período" />
+                        <span class="campo__hint">Opcional · vincula con un período</span>
+                    </div>
+                </div>
+
+                <div class="modal__footer">
+                    <button type="button" class="btn btn--secundario" (click)="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn--primario" [disabled]="form.invalid || cargandoSelects()">
+                        {{ editando() ? 'Guardar Cambios' : 'Registrar Criterio' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
+
+    <!-- Rightbar Detalle -->
+    <div class="rightbar-overlay" [class.rightbar-overlay--visible]="mostrarDetalle()" (click)="cerrarDetalle()"></div>
+    <aside class="rightbar" [class.rightbar--open]="mostrarDetalle()">
+        @if (detalleCargando()) {
+        <div class="rightbar__header">
+            <div class="rightbar__header-info">
+                <div class="skeleton skeleton-circle"></div>
+                <div>
+                    <div class="skeleton skeleton-title"></div>
+                    <div class="skeleton skeleton-text"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rightbar__body">
+            <div class="skeleton skeleton-rect" style="height:200px"></div>
+        </div>
+        } @else if (detalle(); as d) {
+        <div class="rightbar__header">
+            <div class="rightbar__header-info">
+                <div class="rightbar__icono-bg"><lucide-icon name="layers" [size]="18"></lucide-icon></div>
+                <div><strong>{{ d.name }}</strong><span class="rightbar__subtitulo">{{ getTypeLabel(d.type) }}</span>
+                </div>
+            </div>
+            <button class="modal__cerrar" (click)="cerrarDetalle()"><lucide-icon name="x"
+                    [size]="18"></lucide-icon></button>
+        </div>
+        <div class="rightbar__body">
+            <div class="rightbar__seccion">
+                <h3>Información del Criterio</h3>
+                <div class="detalle-grid">
+                    <div class="detalle-campo"><span class="detalle-campo__label">Nombre</span><span
+                            class="detalle-campo__valor">{{ d.name }}</span></div>
+                    <div class="detalle-campo"><span class="detalle-campo__label">Descripción</span><span
+                            class="detalle-campo__valor">{{ d.description || '—' }}</span></div>
+                    <div class="detalle-campo"><span class="detalle-campo__label">Tipo</span><span
+                            class="detalle-campo__valor">{{ getTypeLabel(d.type) }}</span></div>
+                    <div class="detalle-campo"><span class="detalle-campo__label">Escala</span><span
+                            class="detalle-campo__valor">{{ d.scaleName || '—' }}</span></div>
+                    @if (d.parentName) {
+                    <div class="detalle-campo"><span class="detalle-campo__label">Criterio Padre</span><span
+                            class="detalle-campo__valor">{{ d.parentName }}</span></div>
+                    }
+                    @if (d.weight) {
+                    <div class="detalle-campo"><span class="detalle-campo__label">Peso</span><span
+                            class="detalle-campo__valor">{{ d.weight }}%</span></div>
+                    }
+                    <div class="detalle-campo"><span class="detalle-campo__label">Subcriterios</span><span
+                            class="detalle-campo__valor">{{ d.childrenCount || 0 }}</span></div>
+                </div>
+            </div>
+            <div class="rightbar__seccion">
+                <h3>Estado</h3>
+                <div class="detalle-grid">
+                    <div class="detalle-campo"><span class="detalle-campo__label">Estado</span><span
+                            class="detalle-campo__valor"><span class="etiqueta-estado"
+                                [class.etiqueta-estado--activo]="d.isActive">{{ d.isActive ? 'ACTIVO' : 'INACTIVO'
+                                }}</span></span></div>
+                    <div class="detalle-campo"><span class="detalle-campo__label">Registrado</span><span
+                            class="detalle-campo__valor">{{ formatearFecha(d.createdAt) }}</span></div>
+                    <div class="detalle-campo"><span class="detalle-campo__label">Actualizado</span><span
+                            class="detalle-campo__valor">{{ formatearFecha(d.updatedAt) }}</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="rightbar__footer"><button class="btn btn--secundario"
+                (click)="cerrarDetalle()">Cerrar</button><button class="btn btn--primario"
+                (click)="cerrarDetalle(); abrirModal(d)">Editar</button></div>
+        }
+    </aside>
+</div>

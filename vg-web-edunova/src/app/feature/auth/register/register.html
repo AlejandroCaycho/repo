@@ -1,0 +1,197 @@
+<div class="login-page">
+
+  <div class="login-left"
+    style="background-image: url('/education-bg.jpg'); background-size: cover; background-position: center;">
+
+    <div class="login-left__border"></div>
+
+    <div class="login-left__content">
+
+      <div class="login-left__badge">
+        <lucide-icon name="GraduationCap"></lucide-icon>
+      </div>
+
+      <h1 class="login-left__title">
+        Crea tu camino<br>
+        <span>Académico</span>
+      </h1>
+
+      <div class="features-box">
+        <div class="feature-item">
+          <lucide-icon name="Check"></lucide-icon>
+          <span>Acceso instantáneo a notas y reportes académicos.</span>
+        </div>
+        <div class="feature-item">
+          <lucide-icon name="Check"></lucide-icon>
+          <span>Notificaciones en tiempo real para padres y apoderados.</span>
+        </div>
+        <div class="feature-item">
+          <lucide-icon name="Check"></lucide-icon>
+          <span>Seguridad robusta con cifrado JWT avanzado.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-right">
+
+    <div class="login-right__grid"></div>
+
+    <div class="login-right__glow"></div>
+
+    <div class="login-right__container">
+
+      <div class="brand-header">
+        <div class="brand-header__logo">
+          <lucide-icon name="GraduationCap"></lucide-icon>
+        </div>
+        <span class="brand-header__name">EduNova</span>
+      </div>
+
+      <div class="welcome-section">
+        <h2 class="welcome-section__title">
+          Crear una <span>cuenta</span>
+        </h2>
+        <p class="welcome-section__subtitle">
+          Completa el formulario para registrarte en EduNova
+        </p>
+      </div>
+
+      <div class="login-card">
+        @if (errorMsg()) {
+        <div class="error-banner">{{ errorMsg() }}</div>
+        }
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+
+          <div class="form-group">
+            <label for="institucionId" class="form-group__label">
+              Sede Institucional
+            </label>
+            <div class="input-container">
+              <div class="input-container__icon">
+                <lucide-icon name="Building"></lucide-icon>
+              </div>
+              <select id="institucionId" formControlName="institucionId" class="input-container__input"
+                [class.input-container__input--error]="form.get('institucionId')?.invalid && form.get('institucionId')?.touched">
+                <option [value]="null" disabled selected>Selecciona tu sede</option>
+                @for (inst of instituciones(); track inst.id) {
+                <option [value]="inst.id">{{ inst.nombre }}</option>
+                }
+              </select>
+            </div>
+            @if (form.get('institucionId')?.invalid && form.get('institucionId')?.touched) {
+            <p class="error-text">Debe seleccionar una sede institucional.</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="nombre" class="form-group__label">
+              Nombre Completo
+            </label>
+            <div class="input-container">
+              <div class="input-container__icon">
+                <lucide-icon name="User"></lucide-icon>
+              </div>
+              <input id="nombre" type="text" formControlName="nombre" placeholder="Juan Pérez"
+                class="input-container__input"
+                [class.input-container__input--error]="form.get('nombre')?.invalid && form.get('nombre')?.touched" />
+            </div>
+            @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
+            <p class="error-text">El nombre debe tener al menos 3 caracteres.</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-group__label">
+              Correo Electrónico
+            </label>
+            <div class="input-container">
+              <div class="input-container__icon">
+                <lucide-icon name="Mail"></lucide-icon>
+              </div>
+              <input id="email" type="email" formControlName="email" placeholder="juan@vallegrande.edu.pe"
+                class="input-container__input"
+                [class.input-container__input--error]="form.get('email')?.invalid && form.get('email')?.touched" />
+            </div>
+            @if (form.get('email')?.invalid && form.get('email')?.touched) {
+            <p class="error-text">Por favor ingresa un correo electrónico válido.</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="contrasena" class="form-group__label">
+              Contraseña
+            </label>
+            <div class="input-container">
+              <div class="input-container__icon">
+                <lucide-icon name="Lock"></lucide-icon>
+              </div>
+              <input id="contrasena" [type]="verContrasena() ? 'text' : 'password'" formControlName="contrasena"
+                placeholder="Min. 8 caracteres" class="input-container__input"
+                [class.input-container__input--error]="form.get('contrasena')?.invalid && form.get('contrasena')?.touched" />
+              <button type="button" (click)="toggleContrasena()" class="input-container__toggle-btn">
+                <lucide-icon [name]="verContrasena() ? 'EyeOff' : 'Eye'"></lucide-icon>
+              </button>
+            </div>
+            @if (form.get('contrasena')?.invalid && form.get('contrasena')?.touched) {
+            <p class="error-text">La contraseña debe tener al menos 8 caracteres.</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="telefono" class="form-group__label">
+              Teléfono (Opcional)
+            </label>
+            <div class="input-container">
+              <div class="input-container__icon">
+                <lucide-icon name="Phone"></lucide-icon>
+              </div>
+              <input id="telefono" type="tel" formControlName="telefono" placeholder="+51 987 654 321"
+                class="input-container__input" />
+            </div>
+          </div>
+
+          <button type="submit" [disabled]="form.invalid || cargando()" class="btn-primary">
+            @if (cargando()) {
+            <svg class="btn-primary__spinner" fill="none" viewBox="0 0 24 24"
+              style="stroke: #020617; stroke-width: 4; width: 16px; height: 16px;">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+            <span>Creando tu cuenta...</span>
+            } @else {
+            <span>Registrarse</span>
+            <span class="btn-primary__arrow">→</span>
+            }
+          </button>
+        </form>
+
+        <div class="divider-container">
+          <div class="divider-container__line"></div>
+          <span class="divider-container__text">¿Ya tienes cuenta?</span>
+        </div>
+
+        <a routerLink="/auth/login" class="btn-outline-custom">
+          <lucide-icon name="LogIn"></lucide-icon>
+          <span>Iniciar sesión existente</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-security">
+      <div class="footer-security__item">
+        <lucide-icon name="ShieldCheck"></lucide-icon>
+        <span>SSL 256-bit</span>
+      </div>
+      <span class="footer-security__divider">|</span>
+      <div class="footer-security__item">
+        <lucide-icon name="Shield"></lucide-icon>
+        <span>Datos protegidos</span>
+      </div>
+      <span class="footer-security__divider">|</span>
+      <span>© 2026 EduNova</span>
+    </div>
+  </div>
+</div>
