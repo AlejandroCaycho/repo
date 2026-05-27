@@ -22,12 +22,12 @@ PARTE 1: COMPILAR Y SUBIR LAS IMÁGENES (En tu PC de desarrollo actual)
 4. Etiqueta (tag) las imágenes para subirlas a tu cuenta de Docker Hub:
    (REEMPLAZA "carloscaycho" por tu nombre de usuario real de Docker Hub)
    
-   docker tag repo-vg-ms-auth:latest carloscaycho/vg-ms-auth:latest
-   docker tag repo-vg-web-edunova:latest carloscaycho/vg-web-edunova:latest
+   docker tag repo-vg-ms-auth:v1 carloscaycho/vg-ms-auth:v1
+   docker tag repo-vg-web-edunova:v1 carloscaycho/vg-web-edunova:v1
 
 5. Sube las imágenes a tu repositorio de Docker Hub:
-   docker push carloscaycho/vg-ms-auth:latest
-   docker push carloscaycho/vg-web-edunova:latest
+   docker push carloscaycho/vg-ms-auth:v1
+   docker push carloscaycho/vg-web-edunova:v1
 
 
 --------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ En la otra computadora NO necesitas clonar tu código fuente. Solo sigue estos p
 =============================== CORTAR AQUÍ ===============================
 services:
   vg-ms-auth:
-    image: carloscaycho/vg-ms-auth:latest
+    image: carloscaycho/vg-ms-auth:v1
     container_name: vg-ms-auth
     ports:
       - "8081:8081"
@@ -66,7 +66,7 @@ services:
     restart: unless-stopped
 
   vg-web-edunova:
-    image: carloscaycho/vg-web-edunova:latest
+    image: carloscaycho/vg-web-edunova:v1
     container_name: vg-web-edunova
     ports:
       - "4200:80"
